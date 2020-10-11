@@ -1,0 +1,23 @@
+{
+  "name": "serverprojectx",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "aws-sdk": "2.770.0",
+    "bluebird": "3.7.2",
+    "body-parser": "1.19.0",
+    "express": "4.17.1",
+    "express-session": "1.17.1",
+    "knex": "0.21.6",
+    "mysql": "2.18.1",
+    "passport": "0.4.1",
+    "passport-jwt": "4.0.0",
+    "node-fetch": "2.6.1",
+    "speakeasy": "2.0.0",
+    "weeknumber": "1.1.2",
+    "jsonwebtoken": "8.5.1"
+  }
+}
