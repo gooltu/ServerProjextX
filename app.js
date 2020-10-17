@@ -9,7 +9,7 @@ var ExtractJwt = require('passport-jwt').ExtractJwt
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
-
+var routes_mongooseim = require('./routes/mongooseim')
 
 var app = express();
 app.disable('x-powered-by');
@@ -25,7 +25,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', routes);
-
+app.use('/mongooseim/', routes_mongooseim);
 
 var passportUtil = require('./utils/passport');
 

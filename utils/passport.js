@@ -18,30 +18,14 @@ module.exports = {
 	},
 
 	serializeUser: function(user, done){
-
-		console.log('Serialize:::'+user);
-		//done(null, session);
+		
 		done(null, user);
 
 	},
 
 	deserializeUser: function(id, done){
-
-		console.log('Deserialize:::::'+id);
-		done(null, id);
-		/*
-
-		knex('jcusers').where({id})
-		.select()
-		.then( user => {
-			done(null, user[0] )
-		})
-		.catch( err => {
-			done( err , null);
-		})
 		
-		*/
-		
+		done(null, id);	
 
 	},
 
@@ -49,12 +33,12 @@ module.exports = {
 	isAuthenticated: function(req, res, next){
 
 		if (req.isAuthenticated()){ 
-		    //console.log('OMGOMGOMG:::ISAuthenticated');
+		    
 		   return next();
 
 		}else{      
 		        
-		  return res.status(403).json({ success: false, data: 'Auth Error'});
+		  return res.status(403).json({ error: true, data: 'Auth Error'});
 		        
 		}
 

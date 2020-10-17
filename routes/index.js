@@ -7,9 +7,7 @@ var passportUtils = require('../utils/passport');
 
 var controller = require('../controllers');
 
-const signature = require('cookie-signature');
 
-var cookie = require('cookie');
 
 
 
@@ -29,30 +27,27 @@ router.post('/resendVcode', controller.registration.resendVcode);
 router.get('/awsToken', passport.authenticate('jwt'), controller.registration.awsToken);
 router.post('/updatePushNotificationToken', passport.authenticate('jwt'), controller.registration.updatePushNotificationToken);
 
-/*
 
-router.get('/check_password', controller.mongooseim.check_password);
-router.get('/user_exists', controller.mongooseim.user_exists);
-router.get('/get_password', controller.mongooseim.get_password);
-router.post('/pushnotificationv3/notification/:deviceid', controller.mongooseim.pushnotificationv3);
-
-
-
-
+router.post('/downloadContact', passport.authenticate('jwt'), controller.contacts.downloadContact);
+router.post('/downloadContact_Phone', passport.authenticate('jwt'), controller.contacts.downloadContact_Phone);
+router.get('/getProfile', passport.authenticate('jwt'), controller.contacts.getProfile);
+router.post('/getUserProfile', passport.authenticate('jwt'), controller.contacts.getUserProfile);
+router.post('/updateProfileStatus', passport.authenticate('jwt'), controller.contacts.updateProfileStatus);
+router.post('/updateProfileName', passport.authenticate('jwt'), controller.contacts.updateProfileName);
+router.post('/updateProfileAddress', passport.authenticate('jwt'), controller.contacts.updateProfileAddress);
+router.post('/updateProfileDOB', passport.authenticate('jwt'), controller.contacts.updateProfileDOB);
+router.post('/updateProfileGender', passport.authenticate('jwt'), controller.contacts.updateProfileGender);
+router.post('/updateProfileUPI', passport.authenticate('jwt'), controller.contacts.updateProfileUPI);
 router.post('/inviteUser', passport.authenticate('jwt'), controller.contacts.inviteUser);
 router.get('/getChildren', passport.authenticate('jwt'), controller.contacts.getChildren);
 router.get('/getLeaderboard', passport.authenticate('jwt'), controller.contacts.getLeaderboard);
-router.get('/getProfile', passport.authenticate('jwt'), controller.contacts.getProfile);
-router.post('/getUserProfile', passport.authenticate('jwt'), controller.contacts.getUserProfile);
-router.post('/updateProfilePic', passport.authenticate('jwt'), controller.contacts.updateProfilePic);
-router.post('/updateProfileStatus', passport.authenticate('jwt'), controller.contacts.updateProfileStatus);
-router.post('/updateProfileName', passport.authenticate('jwt'), controller.contacts.updateProfileName);
-router.get('/getRegisteredContacts', passport.authenticate('jwt'), controller.contacts.getRegisteredContacts);
-router.post('/downloadContact', passport.authenticate('jwt'), controller.contacts.downloadContact);
-router.post('/downloadContact_Phone', passport.authenticate('jwt'), controller.contacts.downloadContact_Phone);
 
 
 
+
+
+
+/*
 router.get('/getWallet', passport.authenticate('jwt'), controller.wallet.getWallet );
 router.post('/redeemMoney', passport.authenticate('jwt'), controller.wallet.redeemMoney);
 router.post('/buyDiamonds', passport.authenticate('jwt'), controller.wallet.buyDiamonds);
@@ -103,14 +98,6 @@ if(environment === 'development'){
 	require('./test_enabler_routes')(router, controller );
 
 }
-
-
-
-
-
-
-
-
 	
 
 

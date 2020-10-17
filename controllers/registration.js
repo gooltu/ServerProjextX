@@ -111,17 +111,23 @@ registration.registerPhoneNumber = function(req, res, next) {
 registration.verifyCode= function(req, res, next) {
 
 		knex('jcusers').where({id: req.body.userId})
-		.select( 'id', 'vcode' )
+		.select( 'id', 'vcode', 'initialized' )
 		.then( user => {
 			if(user[0].vcode === req.body.verificationCode){
 				
-				//memcached.del(user[0].sessionId, err=>{});
+				
 				let se = speakeasy.totp({secret: 'secret',  encoding: 'base32'});
+				//let se = 999999;
 
 				knex('jcusers').where({ id:user[0].id }).update({ active: true, scode: se })
 				.then( () => {		
-					
-						jwt.sign({ id: req.body.userId, scode: se, db: 'first' }, config.secret, (err, token) => {
+
+
+						if(!user[0].initialized)
+							initializeGame(req.body.userId);
+
+
+						jwt.sign({ id: user[0].id, scode: se }, config.secret, { noTimestamp: true }, (err, token) => {
 
 							if(err)
 								next(err);
@@ -142,6 +148,7 @@ registration.verifyCode= function(req, res, next) {
 				err.status = 403;
 				throw err;
 			}
+
 		})
 		.catch( err => {
 			next(err);
@@ -167,11 +174,12 @@ registration.getAccessToken= function(req, res, next) {
 			if(user.length>0){
 
 				//create access token
-				jwt.sign({ id: user[0].id, db: data.db }, config.secret, { expiresIn: 1800 } ,(err, token) => {
+				jwt.sign({ id: user[0].id }, config.secret, { expiresIn: 1800 } ,(err, token) => {
 					if(err)
 						next(err);
-				  	console.log('Access Token:'+token);
-				  	res.json({error: false, accessToken: token });
+
+				  console.log('Access Token:'+token);
+				  res.json({error: false, accessToken: token });
 				});	
 
 			}else{
