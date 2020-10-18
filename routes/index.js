@@ -45,13 +45,11 @@ router.get('/getLeaderboard', passport.authenticate('jwt'), controller.contacts.
 
 
 
-
-
-/*
 router.get('/getWallet', passport.authenticate('jwt'), controller.wallet.getWallet );
+router.get('/getWalletJewelPrices', passport.authenticate('jwt'), controller.wallet.getWalletJewelPrices );
 router.post('/redeemMoney', passport.authenticate('jwt'), controller.wallet.redeemMoney);
-router.post('/buyDiamonds', passport.authenticate('jwt'), controller.wallet.buyDiamonds);
-router.post('/buyCoins', passport.authenticate('jwt'), controller.wallet.buyCoins);
+router.post('/buyJewelsFromWallet', passport.authenticate('jwt'), controller.wallet.buyJewelsFromWallet);
+router.get('/getAllGiftsWon', passport.authenticate('jwt'), controller.wallet.getAllGiftsWon);
 //router.post('/addMoney', passportUtils.isAuthenticated, jccookie.cookie , controller.wallet.addMoney);
 
 
@@ -76,17 +74,14 @@ router.get('/getNewTaskOnTaskCompletion', passport.authenticate('jwt'),  control
 
 router.post('/pickJewel', passport.authenticate('jwt'),  controller.game.pickJewel);
 router.get('/getGameState', passport.authenticate('jwt'),  controller.game.getGameState);
-router.get('/getFactories', passport.authenticate('jwt'),  controller.game.getFactories);
-router.post('/getFactoryMaterials', passport.authenticate('jwt'),  controller.game.getFactoryMaterials);
-router.post('/getUserFactory', passport.authenticate('jwt'),  controller.game.getUserFactory);
-router.post('/startFactory', passport.authenticate('jwt'),  controller.game.startFactory);
-router.post('/stopFactory', passport.authenticate('jwt'),  controller.game.stopFactory);
-router.post('/flushFactory', passport.authenticate('jwt'),  controller.game.flushFactory);
-router.post('/getJewelFromFactory', passport.authenticate('jwt'),  controller.game.getJewelFromFactory);
 
-
-
-*/
+router.get('/getFactories', passport.authenticate('jwt'),  controller.factory.getFactories);
+router.post('/getFactoryMaterials', passport.authenticate('jwt'),  controller.factory.getFactoryMaterials);
+router.post('/getUserFactory', passport.authenticate('jwt'),  controller.factory.getUserFactory);
+router.post('/startFactory', passport.authenticate('jwt'),  controller.factory.startFactory);
+router.post('/stopFactory', passport.authenticate('jwt'),  controller.factory.stopFactory);
+router.post('/flushFactory', passport.authenticate('jwt'),  controller.factory.flushFactory);
+router.post('/getJewelFromFactory', passport.authenticate('jwt'),  controller.factory.getJewelFromFactory);
 
 
 
