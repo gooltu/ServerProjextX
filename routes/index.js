@@ -76,7 +76,6 @@ router.post('/pickJewel', passport.authenticate('jwt'),  controller.game.pickJew
 router.get('/getGameState', passport.authenticate('jwt'),  controller.game.getGameState);
 
 router.get('/getFactories', passport.authenticate('jwt'),  controller.factory.getFactories);
-router.post('/getFactoryMaterials', passport.authenticate('jwt'),  controller.factory.getFactoryMaterials);
 router.post('/getUserFactory', passport.authenticate('jwt'),  controller.factory.getUserFactory);
 router.post('/startFactory', passport.authenticate('jwt'),  controller.factory.startFactory);
 router.post('/stopFactory', passport.authenticate('jwt'),  controller.factory.stopFactory);

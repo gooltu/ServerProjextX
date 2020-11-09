@@ -38,7 +38,7 @@ factory.getUserFactory= function(req, res, next) {
 };
 
 
-game.flushFactory = function(req, res, next) {
+factory.flushFactory = function(req, res, next) {
 
   let user_id = req.user.id;
   let factory_id = req.body.factory_id;  
