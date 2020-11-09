@@ -80,7 +80,7 @@ router.post('/getUserFactory', passport.authenticate('jwt'),  controller.factory
 router.post('/startFactory', passport.authenticate('jwt'),  controller.factory.startFactory);
 router.post('/stopFactory', passport.authenticate('jwt'),  controller.factory.stopFactory);
 router.post('/flushFactory', passport.authenticate('jwt'),  controller.factory.flushFactory);
-router.post('/getJewelFromFactory', passport.authenticate('jwt'),  controller.factory.getJewelFromFactory);
+router.post('/transferJewelsFromFactory', passport.authenticate('jwt'),  controller.factory.transferJewelsFromFactory);
 
 
 
