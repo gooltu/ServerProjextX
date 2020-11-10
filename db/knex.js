@@ -9,7 +9,5 @@ if(environment === 'production')
 else
 	config = require('../knexfile_development.js')[environment];
 
-console.log('CONFIG');
-console.log(config);
 
 module.exports = require('knex')(config);
