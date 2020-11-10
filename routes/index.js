@@ -15,7 +15,7 @@ var controller = require('../controllers');
 router.get('/',  function(req, res, next) {
 				
 	
-  	return res.json({ message : 'hello:'+process.env.NODE_ENV+':'+ });
+  	return res.json({ message : 'hello:'+process.env.NODE_ENV });
 });
 
 
