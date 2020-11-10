@@ -13,9 +13,9 @@ var controller = require('../controllers');
 
 /* GET home page. */
 router.get('/',  function(req, res, next) {
-		//console.log('OMG:::'+req.session.id);		
-	console.log();
-  	return res.json({ message : 'hello:'+process.env.NODE_ENV+':'+process.env.PORT+':'+process.env.durl+':'+process.env.dusername });
+				
+	
+  	return res.json({ message : 'hello:'+process.env.NODE_ENV+':'+ });
 });
 
 

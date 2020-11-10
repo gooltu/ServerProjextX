@@ -123,7 +123,7 @@ tasksgift.redeemGiftTask = function(req, res, next){
 
   let now = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
   now = new Date(now);
-  let currentcycle = now.getFullYear().toString() + wn.weekNumberSun(now); 
+  let currentcycle = now.getFullYear().toString() + wn.weekNumberSun(now);
 
   console.log('Cycle: ' + currentcycle );
 

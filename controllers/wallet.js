@@ -122,7 +122,7 @@ wallet.buyJewelsFromWallet = function(req, res, next) {
 
 	knex('wallet')
 	.join('walletjewelprice')
-	.where({ 'wallet.user_id': req.session.user.id, 'walletjewelprice.id': pricemenu_id,  })
+	.where({ 'wallet.user_id': req.user.id, 'walletjewelprice.id': pricemenu_id,  })
 	.whereRaw('?? >= ??', ['wallet.money', 'walletjewelprice.money'])
 	.select('walletjewelprice.count as jcount', 'walletjewelprice.money as cost', 'walletjewelprice.jeweltype_id as jeweltype_id')
 	.then(entry =>{			
@@ -132,15 +132,15 @@ wallet.buyJewelsFromWallet = function(req, res, next) {
 
 			knex.transaction( trx => {
 
-							knex('walletlog').insert({ user_id: req.session.user.id, money: entry[0].cost , tag:'Jewel buy from wallet' }).transacting(trx)
+							knex('walletlog').insert({ user_id: req.user.id, money: entry[0].cost , tag:'Jewel buy from wallet' }).transacting(trx)
 							.then( () => {
 
-								return knex('wallet').where({ user_id: req.session.user.id }).decrement( 'money', entry[0].cost ).transacting(trx);
+								return knex('wallet').where({ user_id: req.user.id }).decrement( 'money', entry[0].cost ).transacting(trx);
 
 							})	
 							.then( () => {
 
-								return knex('jewels').where({ user_id: req.session.user.id, jeweltype_id: entry[0].jeweltype_id })
+								return knex('jewels').where({ user_id: req.user.id, jeweltype_id: entry[0].jeweltype_id })
 								.increment('count', entry[0].jcount )
 								.increment('total_count', entry[0].jcount )
 								.transacting(trx);
@@ -168,62 +168,4 @@ wallet.buyJewelsFromWallet = function(req, res, next) {
 
 
 
-// wallet.buyCoins = function(req, res, next) {
-  
-//   let d_id = req.body.id; let d=0, m=0, money = 0;
 
-// 	if(d_id == 1 ){
-// 		d=100; m=20;
-// 	}else if(d_id == 2 ){
-// 		d=200; m=38;
-// 	}else if(d_id ==3 ){
-// 		d=300; m=55;
-// 	}
-
-// 	knex('wallet').where({ user_id: req.session.user.id }).select()
-// 	.then(entry =>{
-
-// 			money = entry[0].money;
-			
-// 			if( d==0 || m==0 )
-// 				throw new Error('Illegal Input');
-
-// 			if(entry[0].money < m)
-// 				throw new Error('Not enough money in wallet');
-
-// 			knex.transaction( trx => {
-
-// 							knex('walletlog').insert({ user_id: req.session.user.id, money: -m, tag:'Coin buy '+ m }).transacting(trx)
-// 							.then( () => {
-
-// 								return knex('wallet').where({ user_id: req.session.user.id }).decrement( 'money', m ).transacting(trx);
-
-// 							})	
-// 							.then( () => {
-
-// 								return knex('jewels').update({ user_id: req.session.user.id, jeweltype_id: 1 }).increment('count', d ).transacting(trx);
-
-// 							})
-// 							.then( () => {
-
-// 								return knex('jewels').update({ user_id: req.session.user.id, jeweltype_id: 1 }).increment('total_count', d ).transacting(trx);
-
-// 							})						
-// 							.then(trx.commit)
-// 		      		.catch(trx.rollback);
-
-// 			})   
-// 			.then( values => {
-// 					return res.json({ error: false, money: (money-m) });
-// 		  })
-// 		  .catch( err => {
-// 		    next(err);
-// 		  });	
-
-// 	})
-// 	.catch(err => {
-// 		next(err);
-// 	});
-	
-
-// };
