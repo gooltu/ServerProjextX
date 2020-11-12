@@ -80,7 +80,7 @@ registration.registerPhoneNumber = function(req, res, next) {
 					let se = speakeasy.totp({secret: 'secret',  encoding: 'base32'});
 					//let se = '888888';
 
-					knex.table('jcusers').insert({ phone, vcode:se, name: 'defaultJCUname', status: 'Keep collecting...', teamjc_id: teamjc_list[0].id, teamjc_phone: teamjc_list[0].phone })
+					knex.table('jcusers').insert({ phone, vcode:se, name: 'defaultJCUname', status: 'Keep collecting...' })
 					.then(id => {		
 
 										nodefetch( 'http://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/'+phone+'/'+se , {        					        
