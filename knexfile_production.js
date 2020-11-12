@@ -7,7 +7,7 @@ module.exports = {
       host:  process.env.durl,
       user: process.env.dusername,
       password:  process.env.dpassword,
-      database: 'gameprojectx',
+      database: 'projectx',
       charset: 'utf8'
     }
   }

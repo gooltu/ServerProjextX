@@ -13,8 +13,6 @@ var controller = require('../controllers');
 
 /* GET home page. */
 router.get('/',  function(req, res, next) {
-				
-	
   	return res.json({ message : 'hello:'+process.env.NODE_ENV });
 });
 

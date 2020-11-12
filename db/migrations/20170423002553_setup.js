@@ -19,7 +19,7 @@ exports.up = function(knex, Promise) {
       table.date('dob').nullable();
       table.string('upi').nullable();                 
       table.timestamp('created_at').defaultTo(knex.fn.now());
-      table.timestamp('updated_at').defaultTo(knex.fn.now()).onUpdate(knex.fn.now());        
+      table.timestamp('updated_at').defaultTo(knex.fn.now());        
       table.unique(['phone']);      
       table.index(['reference']);
       table.charset('utf8mb4');
