@@ -350,9 +350,9 @@ registration.awsToken= function(req, res, next) {
 	let cognitoidentity = new AWS.CognitoIdentity();
 
 	let params = {
-		IdentityPoolId: 'ap-south-1:7dedf548-261e-4e7f-b9e6-83f09b16817b',
+		IdentityPoolId: 'ap-south-1:e04ce17e-0b33-4ada-b6a0-962aa9adfb29',
 		Logins:{
-			'nk.jc.reactapp': req.user.id+''
+			'mayukh.projectx.reactnativeapp': req.user.id+''
 		}
 	};
 
