@@ -273,12 +273,9 @@ module.exports = function(userid) {
                                                     }]
 
                                                   ).transacting(trx);
-        })        
-        .then( () =>{
-          return knex('money').decrement('money', 8.0).transacting(trx);
-        })              
+        })                     
         .then(()=>{
-              return knex('taskusers').insert([{
+             return knex('taskusers').insert([{
                                                 user_id: userid,
                                                 task_id: 1                          
                                               },
