@@ -49,7 +49,7 @@ contacts.getProfile= function(req, res, next) {
 
 		
 		knex('jcusers').where( 'jcusers.id', req.user.id )
-		.select('id', 'name', 'status', 'address', 'gender', 'dob', 'upi')
+		.select('id', 'phone' ,'name', 'status', 'address', 'gender', 'dob', 'upi')
 		.then(profile => {
 				res.json({ error:false, profile });
 		})
@@ -65,7 +65,7 @@ contacts.getUserProfile= function(req, res, next) {
 		//console.log('ID: '+ req.body.user_id);
 
 		knex('jcusers').where( 'jcusers.id' , req.body.user_id ).join('scores', 'jcusers.id', '=', 'scores.user_id')
-		.select('jcusers.id', 'jcusers.name', 'scores.level', 'jcusers.status')	
+		.select('jcusers.id', 'jcusers.phone' ,'jcusers.name', 'scores.level', 'jcusers.status')	
 		.then(profile => {
 				res.json({ error:false, profile });
 		})
@@ -215,7 +215,7 @@ contacts.getChildren= function(req, res, next) {
 		let t1 = knex('jcusers')
 		.where( 'jcusers.reference', user[0].phone )
 		.join('scores', 'jcusers.id', '=', 'scores.user_id')
-		.select('jcusers.id as id', 'jcusers.name as name', 'scores.level as level');
+		.select('jcusers.id as id', 'jcusers.phone as phone','jcusers.name as name', 'scores.level as level');
 
 		p.push(t1);
 
@@ -260,28 +260,28 @@ contacts.getLeaderboard = function(req, res, next) {
 			let t1 = knex('scores').where({level:scores[0].level+1}).andWhere('points','>',0)
 								.join('jcusers','scores.user_id', '=', 'jcusers.id')
 								.orderBy('scores.points', 'desc')
-								.select('jcusers.id as id', 'jcusers.pic as pic', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
+								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
 								.limit(5);
 			p.push(t1);					
 
 			let t2 = knex('scores').where({level:scores[0].level}).andWhere('points','>',scores[0].points)
 								.join('jcusers','scores.user_id', '=', 'jcusers.id')
 								.orderBy('scores.points', 'desc')
-								.select('jcusers.id as id', 'jcusers.pic as pic', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
+								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
 								.limit(5);
 			p.push(t2);									
 
 			let t3 = knex('scores').where({level:scores[0].level}).andWhere('points','<',scores[0].points)
 								.join('jcusers','scores.user_id', '=', 'jcusers.id')
 								.orderBy('scores.points', 'desc')
-								.select('jcusers.id as id', 'jcusers.pic as pic', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
+								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
 								.limit(10);
 			p.push(t3);							
 
 			let t4 = knex('scores').where({level:scores[0].level-1})
 								.join('jcusers','scores.user_id', '=', 'jcusers.id')
 								.orderBy('scores.points', 'desc')
-								.select('jcusers.id as id', 'jcusers.pic as pic', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
+								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
 								.limit(10);					
 
 			p.push(t4);
