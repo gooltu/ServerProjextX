@@ -207,72 +207,82 @@ registration.initialDetails= function(req, res, next) {
 		upd.name = req.body.name;
 
 
-		if(req.body.reference){			
+		if(req.body.reference){		
+
+				knex('jcusers').where({id: req.user.id}).whereNull('reference').select('id','phone')
+				.then(user => {
+
+						if(user.length > 0){
+								console.log(user[0].phone);
+								console.log(req.body.reference);
+								if(user[0].phone.toString() === req.body.reference.toString() )
+									throw new Error('Referrer mobile number cannot be same as user mobile number.')
+
+								knex('jcusers').where({ phone: req.body.reference, active: true }).select('id')
+								.then( user => {
+
+										if(user.length>0){
+
+												upd.reference = req.body.reference;	
+												ref_id = user[0].id;								
+
+												knex.transaction( trx => {
+
+														knex('jcusers').where({ id: req.user.id }).update(upd).transacting(trx)
+														.then( () => {
+
+															return knex('jewels').where({ user_id: ref_id, jeweltype_id: 2 }).increment('count', 1).increment('total_count', 1).transacting(trx);
+
+														})													
+														.then( () => {
+
+															return knex('jewels').where({ user_id: req.user.id, jeweltype_id: 0 }).increment('count', 1).increment('total_count', 1).transacting(trx);
+
+														})													
+														.then( () => {
+
+															return knex('diamondlog').insert({ user_id: req.user.id, count : 1, logtext: 'Reference Number entry'}).transacting(trx);
+
+														})
+														.then(trx.commit)
+								        				.catch(trx.rollback);
+
+												})   
+												.then( values => {
+								    				return res.json({ error: false, name: req.body.name });
+												})
+												.catch( err => {
+													next(err);
+												});							
+
+
+										}else{
+
+											throw new Error('Referrer mobile number is not active.');
+
+										}
+											
+								})
+								.catch( err =>{
+									next(err);
+								});	
+
+
+						}else{
+							return res.json({ error: false });
+						}	
+
+				})
+				.catch( err =>{
+					next(err);
+				});
 					
-					knex('jcusers').where({ phone: req.body.reference, initialized: true }).select('id')
-					.then( user=>{
-							if(user.length>0){
-
-									upd.reference = req.body.reference;	
-									ref_id = user[0].id;								
-
-									knex.transaction( trx => {
-
-											knex('jcusers').where({ id: req.user.id }).update(upd).transacting(trx)
-											.then( () => {
-
-												return knex('jewels').where({ user_id: ref_id, jeweltype_id: 2 }).increment('count', 1).increment('total_count', 1).transacting(trx);
-
-											})													
-											.then( () => {
-
-												return knex('jewels').where({ user_id: req.user.id, jeweltype_id: 0 }).increment('count', 2).increment('total_count', 2).transacting(trx);
-
-											})													
-											.then( () => {
-
-												return knex('diamondlog').insert({ user_id: req.user.id, count : 2, logtext: 'Reference Number entry'}).transacting(trx);
-
-											})
-											.then(trx.commit)
-					        		.catch(trx.rollback);
-
-									})   
-									.then( values => {
-					    				return res.json({ error: false, name: req.body.name });
-								  })
-								  .catch( err => {
-								    next(err);
-								  });							
-
-
-							}else{
-
-											knex('jcusers').where({ id: req.user.id }).update(upd)
-											.then(()=>{
-													return res.json({ error: false, name: req.body.name });
-											})
-											.catch( err =>{
-												next(err);
-											});	
-
-							}
-								
-					})
-					.catch( err =>{
-						next(err);
-					});	
+							
 
 
 		}else{
 
-				knex('jcusers').where({ id: req.user.id }).update(upd)
-				.then(()=>{
-						return res.json({ error: false, name: req.body.name });
-				})
-				.catch( err =>{
-					next(err);
-				});	
+			throw new Error('Referrer mobile number is not valid.')	
 
 		}		
 
