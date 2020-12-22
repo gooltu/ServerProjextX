@@ -16,6 +16,11 @@ router.get('/',  function(req, res, next) {
   	return res.json({ message : 'hello:'+process.env.NODE_ENV });
 });
 
+router.get('/getGameServerTime',  function(req, res, next) {
+	let d = new Date();
+  	return res.json({ time : d.toUTCString() });
+});
+
 
 router.post('/registerPhoneNumber', controller.registration.registerPhoneNumber);
 router.post('/verifyCode', controller.registration.verifyCode);
