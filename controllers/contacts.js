@@ -62,16 +62,33 @@ contacts.getProfile= function(req, res, next) {
 
 contacts.getUserProfile= function(req, res, next) {
   
-		//console.log('ID: '+ req.body.user_id);
+		console.log('ID: '+ req.body.user_id);
 
-		knex('jcusers').where( 'jcusers.id' , req.body.user_id ).join('scores', 'jcusers.id', '=', 'scores.user_id')
-		.select('jcusers.id', 'jcusers.phone' ,'jcusers.name', 'scores.level', 'jcusers.status')	
-		.then(profile => {
-				res.json({ error:false, profile });
+		if(!req.body.user_id){
+			let err = new Error('Invalid Data');		
+			next(err);
+		}
+
+		let p = [];
+
+		let p1 = knex('jcusers').where( 'jcusers.id' , req.body.user_id )
+				.join('scores', 'jcusers.id', '=', 'scores.user_id')
+				.select('jcusers.phone' ,'jcusers.name', 'scores.level', 'jcusers.status');
+
+		let p2 = knex('jewels').where( 'jewels.user_id' , req.body.user_id ).whereIn('jeweltype_id', [ 0, 1, 2 ]).select('jeweltype_id', 'count');
+
+		p.push(p1);
+		p.push(p2);
+
+
+		Promise.all(p)	
+		.then((values)=>{
+			return res.json({ error: false, user: values[0], jewels: values[1] });
 		})
-		.catch(err => {
-				next(err)
-		});
+		.catch( err => {
+			next(err);
+		});	
+
 
 };
 

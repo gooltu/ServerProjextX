@@ -51,7 +51,7 @@ registration.registerPhoneNumber = function(req, res, next) {
 					.then(()=>{	
 								
 
-								nodefetch( 'http://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/'+phone+'/'+se , {        					        
+								nodefetch( 'https://2factor.in/API/R1/?module=TRANS_SMS&apikey=19a8cb68-fd88-11e9-9fa5-0200cd936042&to='+phone+'&from=JCCHAT&templatename=JewelChatRegistrationOTP&var1='+se , {        					        
 						        headers: { 'cache-control': 'no-cache' },
 						    })
 						    .then(res => res.json())
@@ -83,7 +83,7 @@ registration.registerPhoneNumber = function(req, res, next) {
 					knex.table('jcusers').insert({ phone, vcode:se, name: 'defaultJCUname', status: 'Keep collecting...' })
 					.then(id => {		
 
-										nodefetch( 'http://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/'+phone+'/'+se , {        					        
+										nodefetch( 'https://2factor.in/API/R1/?module=TRANS_SMS&apikey=19a8cb68-fd88-11e9-9fa5-0200cd936042&to='+phone+'&from=JCCHAT&templatename=JewelChatRegistrationOTP&var1='+se , {        					        
 								        headers: { 'cache-control': 'no-cache' },
 								    })
 								    .then(res => res.json())
