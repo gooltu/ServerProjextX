@@ -180,7 +180,10 @@ tasksgame.checkTaskCompletion= function(req, res, next) {
   knex('taskusers').where({ id: req.body.id , task_id: req.body.task_id, user_id: req.user.id })
   .select()
   .then(results => {
-    return res.json({ error: false, taskusers: results[0] })
+    if(results.length > 0)
+      return res.json({ error: false, taskusers: results[0] })
+    else
+      return res.json({ error: false, taskusers: null })
   })
   .catch(err => {
     next(err);
@@ -225,22 +228,20 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
             })
             .then( id => {
 
-              return knex('taskusers').where('taskusers.id', '=', id[0])
-              .join('tasks', 'taskusers.task_id', '=', 'tasks.id')    
-              .select( 'taskusers.id as id', 'tasks.id as task_id', 'tasks.coins as coins', 'tasks.points as points', 'taskusers.done as done', 'taskusers.created_at as created_at' )          
+              // return knex('taskusers').where('taskusers.id', '=', id[0])
+              // .join('tasks', 'taskusers.task_id', '=', 'tasks.id')    
+              // .select( 'taskusers.id as id', 'tasks.id as task_id', 'tasks.coins as coins', 'tasks.points as points', 'taskusers.done as done', 'taskusers.created_at as created_at' )          
               
+              return res.json({ error: false });  
 
-            })
-            .then(newtask => {      
-                return res.json({error: false, newtask });        
-            })
+            })            
             .catch(err => {
               throw err;
             });
 
       }else{
 
-          return res.json({error: false, newtask: [] }); 
+          return res.json({ error: false }); 
       }      
 
 
