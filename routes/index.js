@@ -60,7 +60,7 @@ router.post('/getAchievements', passport.authenticate('jwt'),  controller.achiev
 router.post('/getUsersAchievement', passport.authenticate('jwt'),  controller.achievements.getUsersAchievement);
 router.post('/redeemAchievement', passport.authenticate('jwt'),  controller.achievements.redeemAchievement);
 
-router.get('/getCurrentCycle', passport.authenticate('jwt'), controller.taskgift.getCurrentCycle)
+router.get('/getCurrentCycle', passport.authenticate('jwt'), controller.tasksgift.getCurrentCycle);
 router.post('/getGiftTasks', passport.authenticate('jwt'),  controller.tasksgift.getGiftTasks);
 router.post('/getGiftTasksElements', passport.authenticate('jwt'),  controller.tasksgift.getGiftTasksElements);
 router.post('/getGiftTaskLevel', passport.authenticate('jwt'),  controller.tasksgift.getGiftTaskLevel);
