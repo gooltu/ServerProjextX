@@ -306,8 +306,11 @@ tasksgift.checkGiftTaskCompletion= function(req, res, next) {
 
   knex('gifttaskusers').where({ id: req.body.id , gifttask_id: req.body.gifttask_id, user_id: req.user.id })
   .select()
-  .then(results => {
-    return res.json({ error: false, gifttaskusers: results })
+  .then(results => {    
+    if(results.length > 0)
+      return res.json({ error: false, gifttaskusers: results[0] })
+    else
+      return res.json({ error: false, gifttaskusers: null })
   })
   .catch(err => {
     next(err);
