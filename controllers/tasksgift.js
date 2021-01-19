@@ -152,8 +152,8 @@ tasksgift.redeemGiftTask = function(req, res, next){
   //req.session.user.id
 
 
-  // let now = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
-  // now = new Date(now);
+  let now = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
+  now = new Date(now);
   // let currentcycle = now.getFullYear().toString() + wn.weekNumberSun(now);
 
   let currentcycle = getCycleAndExpdate().currentcycle;

@@ -111,6 +111,8 @@ exports.up = function(knex, Promise) {
   .then(() => {
     return knex.schema.createTable('gifttasks', function(table){
       table.increments('id');
+      table.integer('priority').nullable();
+      table.boolean('enabled').defaultTo(true);
       table.boolean('cash').defaultTo(false);
       table.string('productname').nullable();
       table.string('productdetail', 1500).nullable().collate('utf8mb4_unicode_ci');     
@@ -120,7 +122,9 @@ exports.up = function(knex, Promise) {
       table.integer('current_qty').nullable();
       table.integer('plus_level').nullable();
       table.string('productlinks', 1000).nullable();      
-      table.timestamp('created_at').defaultTo(knex.fn.now());       
+      table.timestamp('created_at').defaultTo(knex.fn.now());  
+      table.index(['priority']); 
+      table.index(['enabled']);     
     })
   })
   .then(() => {
