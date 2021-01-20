@@ -14,13 +14,20 @@ function getCycleAndExpdate(){
 
   let obj = {};
 
-  let now = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
-  now = new Date(now);
-  obj.currentcycle = now.getFullYear().toString() + wn.weekNumberSun(now);
+  // let now = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
+  // now = new Date(now);
+  // obj.currentcycle = now.getFullYear().toString() + wn.weekNumberSun(now);
 
-  now.setDate(now.getDate() - (now.getDay() - 1) + 5);
-  now.setHours(23); now.setMinutes(59); now.setSeconds(59);
-  obj.expiration_at = now;
+  // now.setDate(now.getDate() - (now.getDay() - 1) + 5);
+  // now.setHours(23); now.setMinutes(59); now.setSeconds(59);
+  // obj.expiration_at = now;
+
+  // new Date(year, month, day, hours, minutes, seconds, milliseconds)
+
+
+
+  obj.currentcycle = 20214;
+  obj.expiration_at = new Date(2021, 1, 23, 23, 59, 59, 0);
 
   return obj
 
