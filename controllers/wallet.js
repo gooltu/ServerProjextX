@@ -69,7 +69,7 @@ wallet.redeemMoney = function(req, res, next) {
 	knex.transaction( trx => {
 
 
-					knex('wallet').where({ user_id: req.session.user.id })
+					knex('wallet').where({ user_id: req.user.id })
 					.andWhere('money', '>', 0.0)
 		            .transacting(trx)
 		            .forUpdate()
@@ -80,15 +80,15 @@ wallet.redeemMoney = function(req, res, next) {
 
 						let m = (-1.00) * entry[0].money;
 
-						q = knex('walletlog').insert({ user_id: req.session.user.id, money: m, tag:'redeem' }).transacting(trx);
+						q = knex('walletlog').insert({ user_id: req.user.id, money: m, tag:'redeem' }).transacting(trx);
 
 						p.push(q);
 
-						q = knex('wallet').where({ user_id: req.session.user.id }).decrement( 'money', entry[0].money ).transacting(trx);
+						q = knex('wallet').where({ user_id: req.user.id }).decrement( 'money', entry[0].money ).transacting(trx);
 
 						p.push(q);
 
-						q = knex('allgifts').insert({ user_id: req.session.user.id, money: entry[0].money, money_channel: req.body.channel, status: 'Will be transferred in 3-4 hrs.' }).transacting(trx);
+						q = knex('allgifts').insert({ user_id: req.user.id, money: entry[0].money, money_channel: req.body.channel, status: 'Will be transferred in 3-4 hrs.' }).transacting(trx);
 
 						p.push(q);
 
