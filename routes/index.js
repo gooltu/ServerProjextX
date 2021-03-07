@@ -42,7 +42,7 @@ router.post('/updateProfileDOB', passport.authenticate('jwt'), controller.contac
 router.post('/updateProfileGender', passport.authenticate('jwt'), controller.contacts.updateProfileGender);
 router.post('/updateProfileUPI', passport.authenticate('jwt'), controller.contacts.updateProfileUPI);
 router.post('/inviteUser', passport.authenticate('jwt'), controller.contacts.inviteUser);
-router.get('/getChildren', passport.authenticate('jwt'), controller.contacts.getChildren);
+router.post('/getChildren', passport.authenticate('jwt'), controller.contacts.getChildren);
 router.get('/getLeaderboard', passport.authenticate('jwt'), controller.contacts.getLeaderboard);
 
 

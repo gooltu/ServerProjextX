@@ -232,7 +232,9 @@ contacts.getChildren= function(req, res, next) {
 		let t1 = knex('jcusers')
 		.where( 'jcusers.reference', user[0].phone )
 		.join('scores', 'jcusers.id', '=', 'scores.user_id')
-		.select('jcusers.id as id', 'jcusers.phone as phone','jcusers.name as name', 'scores.level as level');
+		.select('jcusers.id as id', 'jcusers.phone as phone','jcusers.name as name', 'scores.level as level')
+		.orderBy('jcusers.id', 'desc')
+		.limit(100).offset(req.body.page * 100 );
 
 		p.push(t1);
 
