@@ -199,7 +199,7 @@ contacts.inviteUser= function(req, res, next) {
 			else{
 
 					knex('invite')	  
-				  .insert({ user_id: req.user, invitee: req.body.phone  })
+				  .insert({ user_id: req.user.id, invitee: req.body.phone  })
 				  .then( val => {
 
 				  		// send Invite 	SMS 
