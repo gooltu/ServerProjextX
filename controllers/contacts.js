@@ -195,7 +195,7 @@ contacts.inviteUser= function(req, res, next) {
 	.then(user=>{
 
 			if(user.length>0)
-					return res.json({ error:false, phone: req.body.phone, invite:1, is_regis: true, contact: user[0] });
+					return res.json({ error:false, phone: req.body.phone, invite: 0, is_regis: true, contact: user[0] });
 			else{
 
 					knex('invite')	  
@@ -206,7 +206,8 @@ contacts.inviteUser= function(req, res, next) {
 				  		return res.json({error: false, phone: req.body.phone,  invite: 1, is_regis:false });
 				  })
 				  .catch(err=>{
-				  	return res.json({error: false, phone: req.body.phone,  invite: 1, is_regis:false });
+				  	//return res.json({error: false, phone: req.body.phone,  invite: 0, is_regis:false });
+				  	next(err);
 				  });
 
 			}
