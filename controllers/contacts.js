@@ -133,7 +133,7 @@ contacts.updateProfileName = function(req, res, next) {
 
 contacts.updateProfileAddress = function(req, res, next) {
   
-	knex('jcusers').where({ id: req.user.id }).update({ name: req.body.address })
+	knex('jcusers').where({ id: req.user.id }).update({ address: req.body.address })
 	.then(()=>{
 		res.json({ error: false });
 	})
