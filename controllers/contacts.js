@@ -51,7 +51,7 @@ contacts.getProfile= function(req, res, next) {
 		knex('jcusers').where( 'jcusers.id', req.user.id )
 		.select('id', 'phone' ,'name', 'status', 'address', 'gender', 'dob', 'upi')
 		.then(profile => {
-				res.json({ error:false, profile });
+				res.json({ error:false, profile: profile[0] });
 		})
 		.catch(err => {
 				next(err)
