@@ -11,7 +11,7 @@ wallet.getAllGiftsWon = function(req, res, next) {
 	
 
   	
-	knex('allgifts').where({ user_id: req.user.id }).select()
+	knex('allgifts').where({ user_id: req.user.id }).orderBy('id', 'desc')
 	.then(gifts => {
 
 		return res.json({error:false, gifts  });			
