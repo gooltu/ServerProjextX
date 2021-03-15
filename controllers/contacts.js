@@ -275,50 +275,29 @@ contacts.getLeaderboard = function(req, res, next) {
 				throw new Error('Illegal Operation');	
 
 			let p = [];
+							
 
-			let t1 = knex('scores').where({level:scores[0].level+1}).andWhere('points','>',0)
+			let t2 = knex('scores').where('total_points','>',scores[0].total_points)
 								.join('jcusers','scores.user_id', '=', 'jcusers.id')
-								.orderBy('scores.points', 'desc')
-								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
-								.limit(5);
-			p.push(t1);					
-
-			let t2 = knex('scores').where({level:scores[0].level}).andWhere('points','>',scores[0].points)
-								.join('jcusers','scores.user_id', '=', 'jcusers.id')
-								.orderBy('scores.points', 'desc')
-								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
+								.orderBy('scores.total_points')
+								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.total_points as total_points')
 								.limit(5);
 			p.push(t2);									
 
-			let t3 = knex('scores').where({level:scores[0].level}).andWhere('points','<',scores[0].points)
+			let t3 = knex('scores').where('total_points','<',scores[0].total_points)
 								.join('jcusers','scores.user_id', '=', 'jcusers.id')
-								.orderBy('scores.points', 'desc')
-								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
+								.orderBy('scores.total_points', 'desc')
+								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.total_points as total_points')
 								.limit(10);
 			p.push(t3);							
 
-			let t4 = knex('scores').where({level:scores[0].level-1})
-								.join('jcusers','scores.user_id', '=', 'jcusers.id')
-								.orderBy('scores.points', 'desc')
-								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.points as points')
-								.limit(10);					
-
-			p.push(t4);
+			
 			Promise.all(p)
 		    .then( values => {
 
-		      	if(values.length>3){
-		      		if(values[2].length == 0 && values[3].length == 0)
-		      			return res.json({ error:false, top1:[], top2: [], top3: [], top4: [] }); 
-		      		else
-		      			return res.json({ error:false, top1: values[0], top2: values[1], top3: values[2], top4: values[3]});
-		      	}
-		      	else{
-		      		if(values[2].length == 0 && values[3].length == 0)
-		      			return res.json({ error:false, top1:[], top2: [], top3: [], top4: [] }); 
-		      		else	      
-		          		return res.json({ error:false, top1: values[0], top2: values[1], top3: values[2], top4: []});           
-		        }  	
+		    	return res.json({ error:false, top: values[0], down: values[1] });
+
+		      	 	
 			})      
 			  .catch(err=>{
 			  	next(err);

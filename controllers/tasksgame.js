@@ -58,7 +58,7 @@ tasksgame.redeemTask= function(req, res, next) {
   .join('scores', 'taskusers.user_id', '=', 'scores.user_id' )
   .select( 'jewels.jeweltype_id as myjewels_id', 'jewels.count as myjewels_count', 'taskdetails.jeweltype_id as task_jewels_id', 
   'taskdetails.count as task_jewels_count', 'scores.points as mypoints', 'scores.level as mylevel', 'scores.max_level_points as max_level_points',
-  'tasks.coins as taskcoins', 'tasks.points as taskpoints' )
+  'scores.total_points as total_points', 'tasks.coins as taskcoins', 'tasks.points as taskpoints' )
   .then( results => {
 
     
@@ -120,6 +120,7 @@ tasksgame.redeemTask= function(req, res, next) {
               p.push(q);      
 
               let newscore = results[0].mypoints + results[0].taskpoints;
+              let total_points = results[0].total_points + results[0].taskpoints;
 
               let newlevel = results[0].mylevel;
               let newmaxlevelpoints = results[0].max_level_points;
@@ -133,7 +134,7 @@ tasksgame.redeemTask= function(req, res, next) {
 
               q = knex('scores')
                   .where({ user_id: req.user.id})
-                  .update({ level: newlevel, points: newscore, max_level_points: newmaxlevelpoints})                  
+                  .update({ level: newlevel, points: newscore, max_level_points: newmaxlevelpoints, total_points })                  
                   .transacting(trx);  
 
               p.push(q);

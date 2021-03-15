@@ -52,6 +52,7 @@ exports.up = function(knex, Promise) {
       table.integer('storesize').defaultTo(25).notNull();
       table.integer('level_lastweek').defaultTo(1).notNull();
       table.index(['user_id']);
+      table.index(['total_points']);
       table.foreign('user_id').references('jcusers.id');
     })
   })
