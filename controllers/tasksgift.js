@@ -49,6 +49,8 @@ tasksgift.getGiftTasks = function(req, res, next) {
 
   knex('gifttasks')
   .select()
+  .where({ enabled:true })
+  .orderBy('priority')
   .limit(10).offset(req.body.page * 10 )
   .then( gifttasks => {
     return res.json({error: false, gifttasks })
