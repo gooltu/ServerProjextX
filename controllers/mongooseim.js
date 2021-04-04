@@ -4,6 +4,28 @@ let knex = require('../db/knex');
 let config = require('../utils/config');
 let jwt = require('jsonwebtoken');
 
+let admin = require('firebase-admin');
+
+let serviceAccount = {
+	type: process.env.ftype,
+  project_id: process.env.project_id,
+  private_key_id: process.env.private_key_id,
+  private_key: process.env.private_key,
+  client_email: process.env.client_email,
+  client_id: process.env.client_id,
+  auth_uri: process.env.auth_uri,
+  token_uri: process.env.token_uri,
+  auth_provider_x509_cert_url: process.env.auth_provider_x509_cert_url,
+  client_x509_cert_url: process.env.client_x509_cert_url,
+}
+
+console.log(serviceAccount)
+
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)  
+})
+
 let mongooseim = module.exports;
 
 mongooseim.user_exists= function(req, res, next) {
@@ -135,7 +157,17 @@ mongooseim.pushnotificationv3= function(req, res, next) {
 	console.log('BODY');
 
 	console.log(req.body);
-  
-	res.json({ error: false });  
+
+	admin.messaging().sendToDevice(req.params.deviceid, req.body)
+  .then( response => {
+
+  	//res.status(200).send("Notification sent successfully")
+  	res.json({ error: false }); 
+   
+  })
+  .catch( error => {
+      next(err);
+  });  
+	 
 
 };

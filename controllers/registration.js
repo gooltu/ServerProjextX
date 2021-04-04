@@ -299,12 +299,12 @@ registration.resendVcode= function(req, res, next) {
 		knex('jcusers').where({id}).select()
 		.then((user)=>{	
 
-				if(user.length > 0){				
+				if(user.length > 0){
 
 					nodefetch( 
-						'http://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/'+user[0].phone+'/'+user[0].vcode , 
+						'https://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/'+user[0].phone+'/'+user[0].vcode+'/JewelChatRegistrationOTP', 
 						{        					        
-			       headers: { 'cache-control': 'no-cache' },
+			       	headers: { 'cache-control': 'no-cache' },
 			      }
 			    )
 			    .then(res => res.json())
