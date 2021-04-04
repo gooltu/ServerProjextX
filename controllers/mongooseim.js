@@ -162,16 +162,35 @@ mongooseim.pushnotificationv3= function(req, res, next) {
 
 	console.log(req.body);
 
-	admin.messaging().sendToDevice(req.params.deviceid, req.body)
-  .then( response => {
+	let phone  = req.body.alert.title.split('@')[0]
+
+	knex('jcusers').where({phone}).select('name')
+	.then(user =>{
+
+		let message = {
+		  notification: {
+		    title: user[0].name,
+		    body: req.body.alert.body
+		  }
+		};
+
+		return admin.messaging().sendToDevice(req.params.deviceid, message )
+	  
+	  
+
+	})
+	.then( response => {
 
   	//res.status(200).send("Notification sent successfully")
   	res.json({ error: false }); 
    
   })
-  .catch( error => {
-      next(error);
-  });  
+	.catch(err => {
+		next(err)
+	})
+
+
+	  
 	 
 
 };
