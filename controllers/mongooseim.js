@@ -170,7 +170,7 @@ mongooseim.pushnotificationv3= function(req, res, next) {
    
   })
   .catch( error => {
-      next(err);
+      next(error);
   });  
 	 
 
