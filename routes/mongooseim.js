@@ -17,7 +17,7 @@ router.get('/',  function(req, res, next) {
 router.get('/check_password', controller.mongooseim.check_password);
 router.get('/user_exists', controller.mongooseim.user_exists);
 router.get('/get_password', controller.mongooseim.get_password);
-router.post('/pushnotificationv3/notification/:deviceid', controller.mongooseim.pushnotificationv3);
+router.post('/pushnotification/v3/notification/:deviceid', controller.mongooseim.pushnotificationv3);
 
 
 
