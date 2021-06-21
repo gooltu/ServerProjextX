@@ -165,7 +165,7 @@ registration.getAccessToken= function(req, res, next) {
 	jwt.verify( req.body.refreshToken, config.secret, (err, data) => {
 
 		if(err)
-			next(err);
+			return next(err);
 
 		console.log(data);
 
@@ -185,12 +185,12 @@ registration.getAccessToken= function(req, res, next) {
 
 			}else{
 				let err = new Error('Invalid Refresh Token')
-				next(err);
+				return next(err);
 			}
 
 		})	
 		.catch(err =>{
-			next(err);
+			return next(err);
 		});	
 
 	})
