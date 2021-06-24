@@ -199,51 +199,101 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
 
   knex('taskusers').where({ user_id: req.user.id, done: false })
   .count('id as c')
-  .then( count => {
+  .max('created_at as max_created_at')
+  .then( taskuser => {
 
-      if( count[0].c < 8 ){
+      if( taskuser[0].c < 8 ){
 
             knex('scores').where({ user_id: req.user.id })
             .select()
             .then( score => {
 
-                let t_id;
+                let onehr_ago = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
+                onehr_ago = new Date(onehr_ago); 
+                onehr_ago.setHours(onehr_ago.getHours() - 1);
 
-                let score_level = score[0].level;
+                knex('taskusers')
+                .where({ 'taskusers.user_id' : req.user.id, 'taskusers.done' : true })
+                .where('completed_at', '>=', onehr_ago)
+                .join('tasks', 'taskusers.task_id', '=', 'tasks.id' )
+                .orderBy('taskusers.completed_at', 'desc')
+                .select('tasks.points as xp')
+                .then( recentlycompleted => {
 
-                
-                // if(score_level<10)
-                //   t_id = Math.floor(Math.random() * (2000 - 10 + 1)) + 10;
-                // else if(score_level>=7 && score_level<17)
-                //   t_id = Math.floor(Math.random() * (3000 - 10 + 1)) + 10;
-                // else if(score_level>=17 && score_level<27)
-                //   t_id = Math.floor(Math.random() * (4000 - 10 + 1)) + 10;
-                // else if(score_level>=27 )  
-                //   t_id = Math.floor(Math.random() * (5000 - 10 + 1)) + 10;
-                
-                t_id = Math.floor(Math.random() * (50 - 9 + 1)) + 9;
+                    console.log('Recently Completed', recentlycompleted.length);
 
-                //t_id = 4;
+                    let t_id;
+                    let score_level = score[0].level;
 
-                return knex('taskusers').insert({ user_id: req.user.id, task_id: t_id });
+                    // if(score_level<10)
+                    //   t_id = Math.floor(Math.random() * (2000 - 10 + 1)) + 10;
+                    // else if(score_level>=7 && score_level<17)
+                    //   t_id = Math.floor(Math.random() * (3000 - 10 + 1)) + 10;
+                    // else if(score_level>=17 && score_level<27)
+                    //   t_id = Math.floor(Math.random() * (4000 - 10 + 1)) + 10;
+                    // else if(score_level>=27 )  
+                    //   t_id = Math.floor(Math.random() * (5000 - 10 + 1)) + 10;
+                    
+                    t_id = Math.floor(Math.random() * (50 - 9 + 1)) + 9;
 
-            })
-            .then( id => {
 
-              // return knex('taskusers').where('taskusers.id', '=', id[0])
-              // .join('tasks', 'taskusers.task_id', '=', 'tasks.id')    
-              // .select( 'taskusers.id as id', 'tasks.id as task_id', 'tasks.coins as coins', 'tasks.points as points', 'taskusers.done as done', 'taskusers.created_at as created_at' )          
-              
-              return res.json({ error: false });  
+                    let max_created_at = new Date(taskuser[0].max_created_at).toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
+                    max_created_at = new Date(max_created_at); 
 
-            })            
+                    let now = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
+                    now = new Date(now);
+
+                    const f = (acc, cval) => {                          
+                      return { xp: (acc.xp + cval.xp) };
+                    }
+
+                    let sum_points = recentlycompleted.reduce( f, {xp:0}).xp;
+                    let delay;
+
+                    if(sum_points<=80)
+                      delay = 0;
+                    else if(sum_points > 80 && sum_points <=100)
+                      delay = 2;
+                    else if(sum_points > 100 && sum_points<=120)
+                      delay = 3;
+                    else if(sum_points > 120 && sum_points<=140)
+                      delay = 4;
+                    else 
+                      delay = 5;
+
+                    if(max_created_at >= now ){
+                      max_created_at.setHours(max_created_at.getHours() + delay);
+                      return knex('taskusers').insert({ user_id: req.user.id, task_id: t_id, created_at: max_created_at });
+                    }else{
+                      now.setHours(now.getHours() + delay);
+                      return knex('taskusers').insert({ user_id: req.user.id, task_id: t_id, created_at: now });
+                    }
+                    
+
+                })
+                .then( id => {
+
+                  // return knex('taskusers').where('taskusers.id', '=', id[0])
+                  // .join('tasks', 'taskusers.task_id', '=', 'tasks.id')    
+                  // .select( 'taskusers.id as id', 'tasks.id as task_id', 'tasks.coins as coins', 'tasks.points as points', 'taskusers.done as done', 'taskusers.created_at as created_at' )          
+                              
+
+                })
+                .catch(err => {
+
+                })
+
+
+            })                        
             .catch(err => {
-              throw err;
+              //throw err;
             });
+
+        return res.json({ error: false });  
 
       }else{
 
-          return res.json({ error: false }); 
+        return res.json({ error: false }); 
       }      
 
 

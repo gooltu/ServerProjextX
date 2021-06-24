@@ -31,11 +31,11 @@ let registration = module.exports;
 registration.registerPhoneNumber = function(req, res, next) {
 
 	let phone = req.body.phone;
-	console.log('>>>>'+phone);
+	//console.log('>>>>'+phone);
 
 	if(!phone){
 		let err = new Error('Improper Data');		
-		next(err);	
+		return next(err);	
 	}
 
 
@@ -316,7 +316,7 @@ registration.resendVcode= function(req, res, next) {
 				}
 				else{
 					let err = new Error('Invalid User Id');
-					next(err);
+					return next(err);
 				}
 
 		})
@@ -370,7 +370,7 @@ registration.awsToken= function(req, res, next) {
 	cognitoidentity.getOpenIdTokenForDeveloperIdentity(params, (err, data) =>{
 
 		if(err){
-			next(err)
+			return next(err)
 		}else{
 			return res.json(data);
 		}
