@@ -279,12 +279,12 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                       delay = 5;
 
                     if(max_created_at >= now ){
-                      console.log('max_created_at greater', delay);
+                      console.log('max_created_at greater', delay, sum_points);
                       max_created_at.setHours(max_created_at.getHours() + delay);
                       
                       return knex('taskusers').insert({ user_id: req.user.id, task_id: t_id, created_at: max_created_at });
                     }else{
-                      console.log('now is greater', delay);
+                      console.log('now is greater', delay, sum_points);
                       now.setHours(now.getHours() + delay);
                       
                       return knex('taskusers').insert({ user_id: req.user.id, task_id: t_id, created_at: now });
