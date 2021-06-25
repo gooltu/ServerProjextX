@@ -16,7 +16,7 @@ tasksgame.getTasks = function(req, res, next) {
   
   knex('taskusers').where({ user_id: req.user.id, done : false })
   .join('tasks', 'taskusers.task_id', '=', 'tasks.id')    
-  .orderBy('created_at')
+  .orderBy('taskusers.id', 'desc')
   .select( 'taskusers.id as id', 'tasks.id as task_id', 'tasks.coins as coins', 'tasks.points as points', 'taskusers.done as done', 'taskusers.created_at as created_at' )          
   .then(tasks => {      
       return res.json({error: false, tasks });        
