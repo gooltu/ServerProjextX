@@ -16,6 +16,7 @@ tasksgame.getTasks = function(req, res, next) {
   
   knex('taskusers').where({ user_id: req.user.id, done : false })
   .join('tasks', 'taskusers.task_id', '=', 'tasks.id')    
+  .orderBy('created_at')
   .select( 'taskusers.id as id', 'tasks.id as task_id', 'tasks.coins as coins', 'tasks.points as points', 'taskusers.done as done', 'taskusers.created_at as created_at' )          
   .then(tasks => {      
       return res.json({error: false, tasks });        
@@ -48,9 +49,13 @@ tasksgame.redeemTask= function(req, res, next) {
   //req.body.task_id
   //req.user.id  
 
+  let curr_time = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
+  curr_time = new Date(curr_time);
+
   knex('taskusers')
   .where( { 'taskusers.user_id' : req.user.id, 'taskusers.task_id': req.body.task_id, 'taskusers.id': req.body.id,
-    'taskusers.done': false } )    
+    'taskusers.done': false } )
+  .where('taskusers.created_at', '<', curr_time )    
   .whereRaw('?? = ??', ['jewels.jeweltype_id', 'taskdetails.jeweltype_id'])  
   .join('taskdetails', 'taskdetails.task_id', '=', 'taskusers.task_id')
   .join('tasks', 'taskusers.task_id', '=', 'tasks.id' )   
@@ -101,8 +106,8 @@ tasksgame.redeemTask= function(req, res, next) {
 
               }
 
-              let now = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
-              now = new Date(now);
+              let now = new Date();
+              
 
               q = knex('taskusers')
                   .where({ id: req.body.id })
@@ -202,14 +207,15 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
   .max('created_at as max_created_at')
   .then( taskuser => {
 
+      console.log( taskuser[0].c, taskuser[0].max_created_at);
+
       if( taskuser[0].c < 8 ){
 
             knex('scores').where({ user_id: req.user.id })
             .select()
             .then( score => {
 
-                let onehr_ago = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
-                onehr_ago = new Date(onehr_ago); 
+                let onehr_ago = new Date();                
                 onehr_ago.setHours(onehr_ago.getHours() - 1);
 
                 knex('taskusers')
@@ -217,7 +223,7 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                 .where('completed_at', '>=', onehr_ago)
                 .join('tasks', 'taskusers.task_id', '=', 'tasks.id' )
                 .orderBy('taskusers.completed_at', 'desc')
-                .select('tasks.points as xp')
+                .select('tasks.points as xp','taskusers.completed_at as comp_at')
                 .then( recentlycompleted => {
 
                     console.log('Recently Completed', recentlycompleted.length);
@@ -236,14 +242,25 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                     
                     t_id = Math.floor(Math.random() * (50 - 9 + 1)) + 9;
 
+                    let max_created_at;
+                    if(taskuser[0].max_created_at){
+                        max_created_at = new Date(taskuser[0].max_created_at + ' UTC');
+                      }
+                    else
+                        max_created_at = new Date();  
+                    //max_created_at.setHours(max_created_at.getHours() - 5.5);
+                    //max_created_at = new Date(max_created_at); 
 
-                    let max_created_at = new Date(taskuser[0].max_created_at).toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
-                    max_created_at = new Date(max_created_at); 
 
-                    let now = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
-                    now = new Date(now);
 
-                    const f = (acc, cval) => {                          
+                    let now = new Date();
+                    //now.setHours(now.getHours());
+                    //now = new Date(now);
+
+                    console.log(max_created_at.toString(), now.toString());
+
+                    const f = (acc, cval) => {     
+                      console.log( 'completed_at', cval.comp_at)                     
                       return { xp: (acc.xp + cval.xp) };
                     }
 
@@ -262,13 +279,17 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                       delay = 5;
 
                     if(max_created_at >= now ){
+                      console.log('max_created_at greater', delay);
                       max_created_at.setHours(max_created_at.getHours() + delay);
+                      
                       return knex('taskusers').insert({ user_id: req.user.id, task_id: t_id, created_at: max_created_at });
                     }else{
+                      console.log('now is greater', delay);
                       now.setHours(now.getHours() + delay);
+                      
                       return knex('taskusers').insert({ user_id: req.user.id, task_id: t_id, created_at: now });
                     }
-                    
+
 
                 })
                 .then( id => {
@@ -280,7 +301,8 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
 
                 })
                 .catch(err => {
-
+                  console.log(err);
+                  next(err);
                 })
 
 
