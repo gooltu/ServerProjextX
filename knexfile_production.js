@@ -8,7 +8,9 @@ module.exports = {
       user: process.env.dusername,
       password:  process.env.dpassword,
       database: 'projectx',
-      charset: 'utf8'
+      charset: 'utf8',
+      timezone: 'UTC',
+      dateStrings: true
     }
   }
 };
