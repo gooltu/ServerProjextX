@@ -231,16 +231,12 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                     let t_id;
                     let score_level = score[0].level;
 
-                    // if(score_level<10)
-                    //   t_id = Math.floor(Math.random() * (2000 - 10 + 1)) + 10;
-                    // else if(score_level>=7 && score_level<17)
-                    //   t_id = Math.floor(Math.random() * (3000 - 10 + 1)) + 10;
-                    // else if(score_level>=17 && score_level<27)
-                    //   t_id = Math.floor(Math.random() * (4000 - 10 + 1)) + 10;
-                    // else if(score_level>=27 )  
-                    //   t_id = Math.floor(Math.random() * (5000 - 10 + 1)) + 10;
+                    if(score_level<=12)
+                      t_id = Math.floor(Math.random() * (50 - 9 + 1)) + 9;
+                    else 
+                      t_id = Math.floor(Math.random() * (100 - 9 + 1)) + 9;
                     
-                    t_id = Math.floor(Math.random() * (50 - 9 + 1)) + 9;
+                    
 
                     let max_created_at;
                     if(taskuser[0].max_created_at){
