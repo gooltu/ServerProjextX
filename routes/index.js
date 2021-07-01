@@ -53,6 +53,7 @@ router.get('/getWalletJewelPrices', passport.authenticate('jwt'), controller.wal
 router.post('/redeemMoney', passport.authenticate('jwt'), controller.wallet.redeemMoney);
 router.post('/buyJewelsFromWallet', passport.authenticate('jwt'), controller.wallet.buyJewelsFromWallet);
 router.get('/getAllGiftsWon', passport.authenticate('jwt'), controller.wallet.getAllGiftsWon);
+router.get('/emptyJewelStore', passport.authenticate('jwt'), controller.wallet.emptyJewelStore );
 //router.post('/addMoney', passportUtils.isAuthenticated, jccookie.cookie , controller.wallet.addMoney);
 
 

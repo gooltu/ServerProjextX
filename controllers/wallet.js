@@ -167,5 +167,45 @@ wallet.buyJewelsFromWallet = function(req, res, next) {
 
 
 
+wallet.emptyJewelStore = function(req, res, next) {
+
+	knex.transaction( trx => {
+
+
+							let p = []; let q;
+
+							
+
+							q = knex('walletlog').insert({ user_id: req.user.id, money: -1.00, tag:'redeem' }).transacting(trx);
+
+							p.push(q);
+
+							q = knex('wallet').where({ user_id: req.user.id }).decrement( 'money', 1 ).transacting(trx);
+
+							p.push(q);
+
+							q = knex('jewels').where({ user_id: req.user.id}).whereNotIn('jeweltype_id', [0, 1, 2]).update('count', 0 ).transacting(trx);
+
+							p.push(q);
+
+							Promise.all(p)
+							.then(trx.commit)
+    					.catch(trx.rollback);		
+
+
+							
+
+	})   
+	.then( values => {
+			return res.json({ error: false });
+  })
+  .catch( err => {
+    next(err);
+  });
+
+}
+
+
+
 
 
