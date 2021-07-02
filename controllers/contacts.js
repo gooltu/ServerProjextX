@@ -4,6 +4,8 @@ let knex = require('../db/knex');
 
 let Promise = require('bluebird');
 
+let nodefetch = require('node-fetch');
+
 let contacts = module.exports;
 
 
@@ -188,7 +190,7 @@ contacts.inviteUser= function(req, res, next) {
 
 	if(!req.body.phone){
 		let err = new Error('Invalid Data');		
-		next(err);		
+		return next(err);		
 	}
 
 	knex('jcusers').where({phone: req.body.phone, active:true }).select()
@@ -198,15 +200,44 @@ contacts.inviteUser= function(req, res, next) {
 					return res.json({ error:false, phone: req.body.phone, invite: 0, is_regis: true, contact: user[0] });
 			else{
 
+
+					knex('jcusers').where({id: req.user.id }).select('phone')
+					.then( myphone =>{
+
+							let bodyvar = {
+								From: 'JCCHAT',
+								To: req.body.phone,
+								TemplateName: 'JCinvitation',
+								VAR1: myphone[0].phone,
+								VAR2: 'https://bit.ly/3dBv6ul'
+							}
+
+							console.log('BODY VAR', bodyvar)
+
+							nodefetch( 'https://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS', 
+				  		{       
+				  				method: 'post',
+        						body: JSON.stringify(bodyvar), 					        
+						        headers: { 'cache-control': 'no-cache' },
+					    })
+					    .then(resp => resp.json())
+					    .then(json => console.log(json));
+
+					})
+					.catch(err =>{
+						next(err)
+					})
+
+
+
 					knex('invite')	  
 				  .insert({ user_id: req.user.id, invitee: req.body.phone  })
-				  .then( val => {
+				  .then( val => {	  		
 
-				  		// send Invite 	SMS 
 				  		return res.json({error: false, phone: req.body.phone,  invite: 1, is_regis:false });
 				  })
 				  .catch(err=>{
-				  		return res.json({error: false, phone: req.body.phone,  invite: 0, is_regis:false });
+				  	return res.json({error: false, phone: req.body.phone,  invite: 0, is_regis:false });
 				  });
 
 			}
