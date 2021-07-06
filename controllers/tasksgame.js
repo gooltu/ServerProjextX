@@ -266,13 +266,13 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                     if(sum_points<=80)
                       delay = 0;
                     else if(sum_points > 80 && sum_points <=100)
-                      delay = 2;
+                      delay = 4;
                     else if(sum_points > 100 && sum_points<=120)
                       delay = 3;
                     else if(sum_points > 120 && sum_points<=140)
-                      delay = 4;
+                      delay = 2;
                     else 
-                      delay = 5;
+                      delay = 1;
 
                     if(max_created_at >= now ){
                       console.log('max_created_at greater', delay, sum_points);
