@@ -229,24 +229,34 @@ registration.initialDetails= function(req, res, next) {
 
 												knex.transaction( trx => {
 
-														knex('jcusers').where({ id: req.user.id }).update(upd).transacting(trx)
-														.then( () => {
+														let p = []; let q;
 
-															return knex('jewels').where({ user_id: ref_id, jeweltype_id: 2 }).increment('count', 1).increment('total_count', 1).transacting(trx);
+														q = knex('jcusers').where({ id: req.user.id }).update(upd).transacting(trx);
+														p.push(q);
 
-														})													
-														.then( () => {
+														
 
-															return knex('jewels').where({ user_id: req.user.id, jeweltype_id: 0 }).increment('count', 1).increment('total_count', 1).transacting(trx);
+														q = knex('jewels').where({ user_id: ref_id}).whereIn('jeweltype_id', [ 0 , 2 ]).increment('count', 1).increment('total_count', 1).transacting(trx);
+														p.push(q);
+																										
+														
 
-														})													
-														.then( () => {
+														q = knex('jewels').where({ user_id: req.user.id, jeweltype_id: 0 }).increment('count', 1).increment('total_count', 1).transacting(trx);
+														p.push(q);
+																										
+														
 
-															return knex('diamondlog').insert({ user_id: req.user.id, count : 1, logtext: 'Reference Number entry'}).transacting(trx);
+														q = knex('diamondlog').insert([{ user_id: req.user.id, count : 1, logtext: 'Reference Number entry'},
+																{user_id: ref_id, count : 1, logtext: 'New Successful Refferal'}]).transacting(trx);
 
-														})
+														p.push(q)
+
+
+
+														Promise.all(p)
 														.then(trx.commit)
 								        				.catch(trx.rollback);
+								        				
 
 												})   
 												.then( values => {
