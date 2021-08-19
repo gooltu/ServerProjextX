@@ -199,6 +199,28 @@ tasksgame.checkTaskCompletion= function(req, res, next) {
 };
 
 
+function getTaskRange(level, task_type){
+
+  let band;  
+
+  if(task_type === 'easy')
+    return {low: 9, high: 100, delay:0};
+  else if(task_type === 'hard'){
+    band = ( Math.floor( ( (level % 20) + 1 ) / 2 ) ) % 10 ;
+    band = band == 0 ?  10 : band;
+    return {low: (1001 +  100*(band-1)), high: (1000 + 100*band), delay:0};
+  }
+  else if(task_type === 'hardhard'){
+    band = ( Math.floor( ( (level % 20) + 1 ) / 2 ) ) % 10 ;
+    band = band == 0 ?  10 : band;
+    return {low: (1001 +  100*(band-1)), high: (1000 + 100*band), delay:1};
+  }
+  else if(task_type === 'delay')
+    return {low: 9, high: 100, delay:3};
+
+}
+
+
 tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
 
 
@@ -231,10 +253,10 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                     let t_id;
                     let score_level = score[0].level;
 
-                    if(score_level<=12)
-                      t_id = Math.floor(Math.random() * (50 - 9 + 1)) + 9;
-                    else 
-                      t_id = Math.floor(Math.random() * (100 - 9 + 1)) + 9;
+                    // if(score_level<=12)
+                    //   t_id = Math.floor(Math.random() * (50 - 9 + 1)) + 9;
+                    // else 
+                    //   t_id = Math.floor(Math.random() * (100 - 9 + 1)) + 9;
                     
                     
 
@@ -256,23 +278,38 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                     console.log(max_created_at.toString(), now.toString());
 
                     const f = (acc, cval) => {     
-                      console.log( 'completed_at', cval.comp_at)                     
+                      //console.log( 'completed_at', cval.comp_at)                     
                       return { xp: (acc.xp + cval.xp) };
                     }
 
                     let sum_points = recentlycompleted.reduce( f, {xp:0}).xp;
                     let delay;
 
-                    if(sum_points<=80)
-                      delay = 0;
-                    else if(sum_points > 80 && sum_points <=100)
-                      delay = 4;
-                    else if(sum_points > 100 && sum_points<=120)
-                      delay = 3;
-                    else if(sum_points > 120 && sum_points<=140)
-                      delay = 2;
+                    // if(sum_points<=80)
+                    //   delay = 0;
+                    // else if(sum_points > 80 && sum_points <=100)
+                    //   delay = 4;
+                    // else if(sum_points > 100 && sum_points<=120)
+                    //   delay = 3;
+                    // else if(sum_points > 120 && sum_points<=140)
+                    //   delay = 2;
+                    // else 
+                    //   delay = 1;
+
+                    let task_range;
+
+                    if(sum_points <= 200)
+                      task_range = getTaskRange(score_level, 'easy')
+                    else if(sum_points>200 && sum_points<=500)
+                      task_range = getTaskRange(score_level, 'hard')
+                    else if(sum_points>500 && sum_points<=700)
+                      task_range = getTaskRange(score_level, 'hardhard')
                     else 
-                      delay = 1;
+                      task_range = getTaskRange(score_level, 'delay')
+
+
+                    t_id = Math.floor(Math.random() * (task_range.high - task_range.low + 1)) + task_range.low;
+                    delay = task_range.delay;
 
                     if(max_created_at >= now ){
                       console.log('max_created_at greater', delay, sum_points);

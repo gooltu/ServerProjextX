@@ -42,27 +42,33 @@ achievements.getUsersAchievement = function(req, res, next) {
 };
 
 
-function complete_achievement(diamonds, a_id, user_id, req, res, next){
+function complete_achievement(diamonds, level, achievement, a_id, user_id, req, res, next){
 
   knex.transaction( trx => {    
 
-    knex('jewels').where({ user_id, jeweltype_id: 0 }).increment( 'count', diamonds ).transacting(trx)
-    .then( () => {
-      return knex('jewels').where({ user_id, jeweltype_id: 0 }).increment( 'total_count', diamonds ).transacting(trx);
-    })
-    .then( () => {
-      return knex('achievementusers').where({ id: a_id }).increment( 'level', 5 ).transacting(trx);
-    })
+    let p = []; let q;
+
+    q =  knex('jewels').where({ user_id, jeweltype_id: 0 }).increment( 'count', diamonds ).increment( 'total_count', diamonds ).transacting(trx)
+    p.push(q);
+    
+    q = knex('achievementusers').where({ id: a_id }).increment( 'level', 5 ).transacting(trx);
+    p.push(q);
+
+    q = knex('diamondlog').insert({ user_id , count : diamonds, logtext: 'Achievement '+achievement+' , Achievement User ID '+a_id+' for level '+level}).transacting(trx);
+
+    p.push(q)
+
+
+    Promise.all(p)
     .then( trx.commit)
     .catch(trx.rollback)
 
-  })
-  .then( () => {
-    return res.json({ error:false, percent: 100 });
-  })
+  })  
   .catch(err => {
-    next(err);
+    console.log(err);
   });
+
+  return res.json({ error:false, percent: 100 });
 
 }
 
@@ -73,28 +79,44 @@ achievements.redeemAchievement = function(req, res, next) {
   let a_id = req.body.id;
   let user_id = req.user.id;
 
-  let level, id, phone;
+  let level, id, phone, diamond;  
 
-  knex('achievementusers').where({ id: a_id }).select()
-  .then( achi => {
+  // knex('achievementusers').where({ id: a_id }).select()
+  // .then( achi => {
 
-    id = achi[0].achievement_id;
-    level = achi[0].level;
+  //   id = achi[0].achievement_id;
+  //   level = achi[0].level;
 
-    return knex('jcusers').where({ id: req.user.id }).select(); 
+  //   return knex('jcusers').where({ id: req.user.id }).select(); 
 
-  })
-  .then( user => {
+  // })
+  // .then( user => {
 
-    phone = user[0].phone;    
+  //   phone = user[0].phone;    
 
-    return knex('scores').where({ user_id }).select(); 
+  //   return knex('scores').where({ user_id }).select(); 
 
-  })
-  .then( score => {
+  // })
 
-    if(score[0].level< level)
+  knex('achievementusers')  
+  .join('jcusers', 'achievementusers.user_id', '=', 'jcusers.id')  
+  .join('scores', 'achievementusers.user_id', '=', 'scores.user_id' )
+  .join('achievements', 'achievementusers.achievement_id', '=', 'achievements.id')
+  .where('achievementusers.id', '=', a_id )
+  .where('achievementusers.user_id', '=', user_id)
+  .whereRaw('?? >= ??', ['scores.level', 'achievementusers.level']) 
+  .select('achievementusers.achievement_id as achievement_id', 'achievementusers.level as level',  'jcusers.phone as phone', 'achievements.diamond as diamond')
+  .then( record => {
+
+    console.log(record);
+
+    if(record.length == 0)
       throw new Error('Illegal action');
+
+    id = record[0].achievement_id;
+    phone = record[0].phone;
+    level = record[0].level;
+    diamond = record[0].diamond;
 
     
     switch(id){
@@ -149,47 +171,51 @@ achievements.redeemAchievement = function(req, res, next) {
 
       case 24: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 40 )
+                  .andWhere( 'scores.level', '>=', 35 )
                   .count('jcusers.id as ref');
                   
       case 25: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 50 )
+                  .andWhere( 'scores.level', '>=', 40 )
                   .count('jcusers.id as ref');
                   
       case 26: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 60 )
+                  .andWhere( 'scores.level', '>=', 45 )
                   .count('jcusers.id as ref');
                                                                                           
       case 27: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 70 )
+                  .andWhere( 'scores.level', '>=', 50 )
                   .count('jcusers.id as ref');
                               
       case 28: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 80 )
+                  .andWhere( 'scores.level', '>=', 55 )
                   .count('jcusers.id as ref');
       case 29: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 90 )
+                  .andWhere( 'scores.level', '>=', 60 )
                   .count('jcusers.id as ref');
       
       case 30: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 100 )
+                  .andWhere( 'scores.level', '>=', 65 )
                   .count('jcusers.id as ref');
 
       case 31: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 110 )
+                  .andWhere( 'scores.level', '>=', 70 )
                   .count('jcusers.id as ref');
       
       case 32: return knex('jcusers').where( 'jcusers.reference' , phone )
                   .join('scores', 'jcusers.id', '=', 'scores.user_id')
-                  .andWhere( 'scores.level', '>=', 120 )
-                  .count('jcusers.id as ref');                                                                                                                 
+                  .andWhere( 'scores.level', '>=', 75 )
+                  .count('jcusers.id as ref');  
+
+      default: {
+        throw new Error('Illegal action');
+      }                                                                                                                            
 
     }
 
@@ -202,20 +228,21 @@ achievements.redeemAchievement = function(req, res, next) {
     switch(id){
 
       case 1: {
+          console.log(val);
           if(val[0].i < (level)){
             percent = ( val[0].i * 100 )/ level;
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
       case 2:{
-          if(val[0].i < (level)){
+          if(val[0].total_count < (level)){                    
             percent = ( val[0].total_count * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -224,7 +251,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -233,7 +260,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -242,7 +269,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -251,7 +278,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -260,7 +287,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -269,7 +296,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -278,7 +305,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }      
@@ -287,7 +314,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -296,7 +323,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -305,7 +332,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -314,7 +341,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -323,7 +350,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -332,7 +359,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -341,7 +368,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -350,7 +377,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].total_count * 100 )/ (level * 10);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -359,7 +386,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(2, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -368,7 +395,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(2, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -377,7 +404,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(2, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -386,7 +413,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(2, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -395,7 +422,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(2, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -404,7 +431,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -413,7 +440,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -422,7 +449,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -431,7 +458,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -440,7 +467,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -449,7 +476,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -458,7 +485,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -467,7 +494,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -476,7 +503,7 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
       }
@@ -485,10 +512,13 @@ achievements.redeemAchievement = function(req, res, next) {
             percent = ( val[0].ref * 100 )/ (level);
             return res.json({ error: false, percent })
           }
-          else complete_achievement(1, a_id, user_id,req, res, next);
+          else complete_achievement(diamond, level, id, a_id, user_id,req, res, next);
 
           break;
-      }     
+      }    
+      default:{
+        throw new Error('Illegal action');
+      } 
 
     }
 
