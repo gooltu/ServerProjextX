@@ -204,7 +204,7 @@ function getTaskRange(level, task_type){
   let band;  
 
   if(task_type === 'easy')
-    return {low: 9, high: 100, delay:0};
+    return {low: 101, high: 200, delay:0};
   else if(task_type === 'hard'){
     band = ( Math.floor( ( (level % 20) + 1 ) / 2 ) ) % 10 ;
     band = band == 0 ?  10 : band;
