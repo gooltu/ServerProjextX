@@ -237,8 +237,10 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
             .select()
             .then( score => {
 
+                let prop_hr_ago = process.env.prop_hr_ago || 6;
+
                 let onehr_ago = new Date();                
-                onehr_ago.setHours(onehr_ago.getHours() - 6);
+                onehr_ago.setHours(onehr_ago.getHours() - prop_hr_ago);
 
                 knex('taskusers')
                 .where({ 'taskusers.user_id' : req.user.id, 'taskusers.done' : true })
@@ -296,13 +298,15 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                     // else 
                     //   delay = 1;
 
+                    let prop_difficulty = process.env.prop_difficulty || 200;
+
                     let task_range;
 
-                    if(sum_points <= 200)
+                    if( sum_points <= prop_difficulty)
                       task_range = getTaskRange(score_level, 'easy')
-                    else if(sum_points>200 && sum_points<=500)
+                    else if( sum_points>prop_difficulty && sum_points <= prop_difficulty+300 )
                       task_range = getTaskRange(score_level, 'hard')
-                    else if(sum_points>500 && sum_points<=700)
+                    else if( sum_points > prop_difficulty+300 && sum_points <= prop_difficulty+500 )
                       task_range = getTaskRange(score_level, 'hardhard')
                     else 
                       task_range = getTaskRange(score_level, 'delay')

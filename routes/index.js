@@ -44,6 +44,9 @@ router.post('/updateProfileUPI', passport.authenticate('jwt'), controller.contac
 router.post('/inviteUser', passport.authenticate('jwt'), controller.contacts.inviteUser);
 router.post('/getChildren', passport.authenticate('jwt'), controller.contacts.getChildren);
 router.get('/getLeaderboard', passport.authenticate('jwt'), controller.contacts.getLeaderboard);
+router.post('/listAllJIDs', passport.authenticate('jwt'), controller.contacts.listAllJIDs);
+
+router.post('/resetUser', passport.authenticate('jwt'), controller.contacts.resetUser);
 
 
 
@@ -55,6 +58,9 @@ router.post('/buyJewelsFromWallet', passport.authenticate('jwt'), controller.wal
 router.get('/getAllGiftsWon', passport.authenticate('jwt'), controller.wallet.getAllGiftsWon);
 router.get('/emptyJewelStore', passport.authenticate('jwt'), controller.wallet.emptyJewelStore );
 //router.post('/addMoney', passportUtils.isAuthenticated, jccookie.cookie , controller.wallet.addMoney);
+router.get('/listAllGifts', passport.authenticate('jwt'), controller.wallet.listAllGifts );
+router.get('/listAllGiftsUser', passport.authenticate('jwt'), controller.wallet.listAllGiftsUser );
+router.get('/updateGiftStatus', passport.authenticate('jwt'), controller.wallet.updateGiftStatus );
 
 
 router.post('/getAchievements', passport.authenticate('jwt'),  controller.achievements.getAchievements);

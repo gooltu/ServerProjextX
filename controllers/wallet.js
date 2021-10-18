@@ -206,6 +206,97 @@ wallet.emptyJewelStore = function(req, res, next) {
 }
 
 
+wallet.listAllGifts = function(req, res, next) {
+
+
+	if(req.user.id !== 1){
+		let err = new Error('Improper Data');	
+		return next(err);
+	}
+
+	let page = req.body.page;
+
+	if(!page)
+		page = 0;
+
+	knex('allgifts')
+	.join('jcusers', 'allgifts.user_id', '=', 'jcusers.id')
+	.select('jcusers.phone as phone', 'allgifts.id as id', 'allgifts.user_id as user_id', 'allgifts.money as money', 
+		'allgifts.money_channel as money_channel', 'allgifts.status as status', 'allgifts.notes as notes')
+	.orderBy('allgifts.id', 'desc')
+	.limit(10).offset(page * 10 )
+	.then(allgifts => {
+		return res.json({error: false, allgifts })
+	})
+	.catch(err => {
+	    next(err);
+	});
+
+}
+
+
+
+
+wallet.listAllGiftsUser = function(req, res, next) {
+
+
+	if(req.user.id !== 1){
+		let err = new Error('Improper Data');	
+		return next(err);
+	}
+
+	let page = req.body.page;
+
+	if(!page)
+		page = 0;
+
+
+	let userphone = req.body.phone;
+
+	knex('allgifts')
+	.join('jcusers', 'allgifts.user_id', '=', 'jcusers.id')
+	.where('jcusers.phone', userphone)
+	.select('jcusers.phone as phone', 'allgifts.id as id', 'allgifts.user_id as user_id', 'allgifts.money as money', 
+		'allgifts.money_channel as money_channel', 'allgifts.status as status', 'allgifts.notes as notes')
+	.orderBy('allgifts.id', 'desc')
+	.limit(10).offset(page * 10 )
+	.then(allgifts => {
+		return res.json({error: false, allgifts })
+	})
+	.catch(err => {
+	    next(err);
+	});
+
+}
+
+wallet.updateGiftStatus = function(req, res, next) {
+
+
+	if(req.user.id !== 1){
+		let err = new Error('Improper Data');	
+		return next(err);
+	}
+
+	let id = req.body.allgifts_id;
+	let status = req.body.status;
+	let notes = req.body.notes;
+
+	knex('allgifts')
+	.where('id', id)
+	update({
+		status,
+		notes
+	})	
+	.then(val => {
+		return res.json({error: false })
+	})
+	.catch(err => {
+	    next(err);
+	});
+
+}
+
+
 
 
 

@@ -9,7 +9,7 @@ var controller = require('../controllers');
 /* GET home page. */
 router.get('/',  function(req, res, next) {
 		//console.log('OMG:::'+req.session.id);		
-	console.log();
+	console.log('Ohh');
   	return res.json({ message : 'hello:mongooseim' });
 });
 

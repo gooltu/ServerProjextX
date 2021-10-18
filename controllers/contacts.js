@@ -342,3 +342,74 @@ contacts.getLeaderboard = function(req, res, next) {
 	})
 
 };
+
+
+contacts.listAllJIDs = function(req, res, next) {
+
+	if(req.user.id !== 1){
+		let err = new Error('Improper Data');	
+		return next(err);
+	}
+
+	let page = req.body.page;
+
+	if(!page)
+		page = 0;
+
+	knex('jcusers').select('phone')
+	.limit(10).offset(page * 10 )
+	.then(jids => {		
+
+		return res.json({error: false, jids })
+		
+	})
+	.catch(err=>{
+		next(err);
+	})
+
+};
+
+
+let resetuser = require('../utils/resetUser');
+
+
+contacts.resetUser = function(req, res, next) {
+
+	if(req.user.id !== 1){
+		let err = new Error('Improper Data');	
+		return next(err);
+	}
+
+	let userid = req.body.userid;
+
+	if(!userid){
+		let err = new Error('Specify userid to reset');	
+		return next(err);
+	}
+
+
+	knex('jcusers').where({id:userid}).select('id')
+	.then( (user) => {		
+
+			if(user.length > 0){
+				resetuser(userid);
+				return res.json({error: false })
+			}
+			else{
+				let err = new Error('User does not exist');	
+				return next(err);
+			}
+																	
+		
+	})
+	.catch( err => {				
+		next(err)
+	})
+	
+
+};
+
+
+
+
+
