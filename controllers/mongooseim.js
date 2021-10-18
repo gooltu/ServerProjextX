@@ -11,6 +11,12 @@ let admin = require('firebase-admin');
 const environment = process.env.NODE_ENV || 'development';
 let serviceAccount;
 
+console.log('PrivateKey');
+console.log(process.env.private_key);
+console.log('PrivateKey______Replace');
+console.log(process.env.private_key.replace(/\\n/g, '\n'));
+
+
 if(environment !== 'development'){
 
 		serviceAccount = {
