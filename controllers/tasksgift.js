@@ -220,7 +220,19 @@ tasksgift.redeemGiftTask = function(req, res, next){
                                   .andWhere( 'count', '>=', results[i].task_jewels_count )
                                   .decrement('count', results[i].task_jewels_count).transacting(trx);  
 
-                p.push(q);                  
+                p.push(q);   
+
+
+                if(results[i].myjewels_id == 0){
+
+                  let c = results[i].task_jewels_count * (-1);   
+
+                  q = knex('diamondlog')
+                  .insert({ user_id: req.user.id, count : c, logtext: 'Gift redeem '+req.body.id }).transacting(trx);
+
+                  p.push(q)
+
+                }               
 
               }
 
@@ -247,6 +259,11 @@ tasksgift.redeemGiftTask = function(req, res, next){
                     .increment('money', results[0].money).transacting(trx);
 
                   p.push(q); 
+
+
+                  q = knex('walletlog').insert({ user_id: req.user.id, money: results[0].money, tag:'Gift won' + req.body.id }).transacting(trx);
+
+                  p.push(q);
 
               }else{
 

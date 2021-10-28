@@ -197,6 +197,14 @@ factory.stopFactory = function(req, res, next) {
                                 p.push(t);  
 
 
+                                let c = results[0].diamond * (-1);   
+
+                                t = knex('diamondlog')
+                                .insert({ user_id: req.user.id, count : c, logtext: 'Factory Stop '+factory_id}).transacting(trx);
+
+                                p.push(t)
+
+
                                 t = knex('jewels').where({user_id, jeweltype_id: results[0].fac_jeweltype_id })
                                                          .increment('count', results[0].count)
                                                          .increment('total_count', results[0].count)
@@ -286,7 +294,9 @@ factory.startFactory = function(req, res, next) {
 
               for(let i=0; i<results.length; i++){
                 t = knex('jewels').where({user_id, jeweltype_id: results[i].fac_jewels_id})
-                                  .where('count', '>=', results[i].fac_jewels_count ).decrement('count', results[i].fac_jewels_count)
+                                  .where('count', '>=', results[i].fac_jewels_count )
+                                  .decrement('count', results[i].fac_jewels_count)
+                                  .decrement('total_count', results[i].fac_jewels_count)
                                   .transacting(trx);
                 p.push(t);              
                                    
