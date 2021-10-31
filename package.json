@@ -22,6 +22,7 @@
     "speakeasy": "2.0.0",
     "weeknumber": "1.1.2",
     "jsonwebtoken": "8.5.1",
-    "firebase-admin": "9.5.0"
+    "firebase-admin": "9.5.0",
+    "google-libphonenumber": "3.2.25"
   }
 }
