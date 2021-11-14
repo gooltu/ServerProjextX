@@ -55,6 +55,10 @@ factory.flushFactory = function(req, res, next) {
 
           return knex('factoryuser').where({ factory_id, user_id }).update({ is_on : false , start_time: null });
 
+
+          
+
+
     })
     .then( () => {
         return res.json({ error: false });

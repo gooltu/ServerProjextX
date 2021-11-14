@@ -41,8 +41,8 @@ module.exports = function(userid) {
                     {
                       user_id: userid,
                       jeweltype_id: 1,
-                      count: 50,
-                      total_count: 50  
+                      count: 500,
+                      total_count: 500  
                     },
                     {
                       user_id: userid,
