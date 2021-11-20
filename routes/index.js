@@ -13,7 +13,7 @@ var controller = require('../controllers');
 
 /* GET home page. */
 router.get('/',  function(req, res, next) {
-  	return res.json({ message : 'hello:'+process.env.NODE_ENV });
+  	return res.json({ message : 'helloworld:'+process.env.NODE_ENV });
 });
 
 router.get('/getGameServerTime',  function(req, res, next) {
