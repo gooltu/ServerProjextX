@@ -176,6 +176,9 @@ mongooseim.pushnotificationv3= function(req, res, next) {
 
 	console.log(req.body);
 
+	if(req.body.alert.title === '910000000000@jewelchat.net')
+		return res.json({ error: false }); 
+
 	let phone  = req.body.alert.title.split('@')[0]
 
 	knex('jcusers').where({phone}).select('name')
