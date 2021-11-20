@@ -172,42 +172,45 @@ mongooseim.pushnotificationv3= function(req, res, next) {
 
 	console.log('DeviceId:'+req.params.deviceid);
 
-	console.log('BODY');
+	//console.log('BODY');
 
-	console.log(req.body);
-
-	if(req.body.alert.title === '910000000000@jewelchat.net')
-		return res.json({ error: false }); 
+	//console.log(req.body);
 
 	let phone  = req.body.alert.title.split('@')[0]
 
-	knex('jcusers').where({phone}).select('name')
-	.then(user =>{
+	if(phone === '910000000000')
+		return;
+	else{		
 
-		let message = {
-		  notification: {
-		    title: user[0].name,
-		    body: req.body.alert.body
-		  }
-		};
+		knex('jcusers').where({phone}).select('name')
+		.then(user =>{
+
+			let message = {
+			  notification: {
+			    title: user[0].name,
+			    body: req.body.alert.body
+			  }
+			};
 
 
-		if(environment !== 'development'){
-			return admin.messaging().sendToDevice(req.params.deviceid, message )
-	  }else
-	  	return
-	  
+			if(environment !== 'development'){
+				return admin.messaging().sendToDevice(req.params.deviceid, message )
+		  }else
+		  	return
+		  
 
-	})
-	.then( response => {
+		})
+		.then( response => {
 
-  	//res.status(200).send("Notification sent successfully")
-  	res.json({ error: false }); 
-   
-  })
-	.catch(err => {
-		next(err)
-	})
+	  		//res.status(200).send("Notification sent successfully")
+	  		res.json({ error: false }); 
+	   
+	  	})
+		.catch(err => {
+			next(err)
+		})
+
+	}	
 
 
 	  
