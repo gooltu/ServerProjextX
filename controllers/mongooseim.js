@@ -170,7 +170,7 @@ mongooseim.pushnotificationv3= function(req, res, next) {
 
 	///pushnotificationv3/notification/pn_deviceid_2@jewelchatnet
 
-	console.log('DeviceId:'+req.params.deviceid);
+	//console.log('DeviceId:'+req.params.deviceid);
 
 	//console.log('BODY');
 
@@ -178,9 +178,13 @@ mongooseim.pushnotificationv3= function(req, res, next) {
 
 	let phone  = req.body.alert.title.split('@')[0]
 
-	if(phone === '910000000000')
-		return;
-	else{		
+	if(phone === '910000000000'){
+		console.log('Phone  '+phone);
+		return res.json({ error: false });
+	}
+	else{	
+		
+		console.log('Phone  '+phone);
 
 		knex('jcusers').where({phone}).select('name')
 		.then(user =>{
@@ -203,11 +207,11 @@ mongooseim.pushnotificationv3= function(req, res, next) {
 		.then( response => {
 
 	  		//res.status(200).send("Notification sent successfully")
-	  		res.json({ error: false }); 
+	  		return res.json({ error: false }); 
 	   
 	  	})
 		.catch(err => {
-			next(err)
+			return next(err)
 		})
 
 	}	
