@@ -88,7 +88,7 @@ wallet.redeemMoney = function(req, res, next) {
 
 						p.push(q);
 
-						q = knex('allgifts').insert({ user_id: req.user.id, money: entry[0].money, money_channel: req.body.channel, status: 'Will be transferred in 3-4 hrs.' }).transacting(trx);
+						q = knex('allgifts').insert({ user_id: req.user.id, money: entry[0].money, money_channel: req.body.channel, status: 'Will be transferred in 12hrs.' }).transacting(trx);
 
 						p.push(q);
 
