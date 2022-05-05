@@ -18,7 +18,7 @@
     "mysql": "2.18.1",
     "passport": "0.4.1",
     "passport-jwt": "4.0.0",
-    "node-fetch": "2.6.1",
+    "node-fetch": "3.1.1",
     "speakeasy": "2.0.0",
     "weeknumber": "1.1.2",
     "jsonwebtoken": "8.5.1",
