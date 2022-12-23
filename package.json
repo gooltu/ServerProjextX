@@ -21,8 +21,8 @@
     "node-fetch": "2.6.1",
     "speakeasy": "2.0.0",
     "weeknumber": "1.1.2",
-    "jsonwebtoken": "8.5.1",
-    "firebase-admin": "9.5.0",
+    "jsonwebtoken": "9.0.0",
+    "firebase-admin": "11.4.1",
     "google-libphonenumber": "3.2.25"
   }
 }
