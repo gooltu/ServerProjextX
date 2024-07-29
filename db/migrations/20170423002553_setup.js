@@ -79,11 +79,11 @@ exports.up = function(knex, Promise) {
   })
   .then(() => {
     return knex.schema.createTable('tasks', function(table){
-      table.increments('id');      
+      table.increments('id');          
       table.integer('coins').nullable();
       table.integer('points').notNull();            
     })
-  })
+  })  
   .then(() => {
     return knex.schema.createTable('taskdetails', function(table){
       table.increments('id');
@@ -99,6 +99,8 @@ exports.up = function(knex, Promise) {
     return knex.schema.createTable('taskusers', function(table){
       table.increments('id');
       table.integer('task_id').unsigned().notNull();
+      table.integer('is_bomb').defaultTo(0).notNull(); // 0 - Not a bomb, 1,2,3,4....types of bombs
+      table.integer('bomb_status').defaultTo(-1); //0 active bomb, 1 exploded bomb, 2   difused bomb
       table.integer('user_id').unsigned().notNull();
       table.boolean('done').defaultTo(false);
       table.timestamp('created_at').defaultTo(knex.fn.now()); 
@@ -109,6 +111,16 @@ exports.up = function(knex, Promise) {
       table.foreign('user_id').references('jcusers.id');      
     })
   })  
+  .then(() => {
+    return knex.schema.createTable('bomblogs', function(table){
+      table.increments('id');
+      table.integer('taskusers_id').unsigned().notNull(); 
+      table.timestamp('completed_at').notNull(); 
+      table.integer('bomb_status').defaultTo(0); //0 active bomb, 1 exploded bomb, 2   difused bomb
+      table.index(['taskusers_id']);
+      table.foreign('taskusers_id').references('taskusers.id');         
+    })
+  })
   .then(() => {
     return knex.schema.createTable('gifttasks', function(table){
       table.increments('id');
@@ -217,8 +229,7 @@ exports.up = function(knex, Promise) {
       table.integer('user_id').unsigned().notNull(); 
       table.timestamp('start_time').nullable();    
       table.timestamp('end_time').nullable();
-      table.boolean('diamond_used').defaultTo(false); 
-
+      table.boolean('diamond_used').defaultTo(false);
       table.foreign('factory_id').references('factory.id'); 
       table.foreign('user_id').references('jcusers.id');      
     })
@@ -241,6 +252,24 @@ exports.up = function(knex, Promise) {
       table.timestamp('created_at').defaultTo(knex.fn.now());
       table.index(['user_id']);
       table.foreign('user_id').references('jcusers.id');
+    })
+  })
+  .then(() => {
+    return knex.schema.createTable('market', function(table){
+      table.increments('id');
+      table.integer('seller_user_id').unsigned().notNull();
+      table.integer('jeweltype_id').unsigned().notNull();
+      table.integer('count').notNull();
+      table.decimal('money', [15], [2]).defaultTo(0.00).notNull();
+      table.integer('buyer_user_id').unsigned().nullable();
+      table.timestamp('listed_at').defaultTo(knex.fn.now());
+      table.timestamp('buying_time').nullable();
+      table.index(['jeweltype_id']);
+      table.index(['seller_user_id']); 
+      table.index(['buyer_user_id']);   
+      table.foreign('jeweltype_id').references('jeweltype.id');    
+      table.foreign('seller_user_id').references('jcusers.id');  
+      table.foreign('buyer_user_id').references('jcusers.id');  
     })
   })
   .then(() => {

@@ -18,7 +18,7 @@ tasksgame.getTasks = function(req, res, next) {
   knex('taskusers').where({ user_id: req.user.id, done : false })
   .join('tasks', 'taskusers.task_id', '=', 'tasks.id')    
   .orderBy('taskusers.id', 'desc')
-  .select( 'taskusers.id as id', 'tasks.id as task_id', 'tasks.coins as coins', 'tasks.points as points', 'taskusers.done as done', 'taskusers.created_at as created_at' )          
+  .select( 'taskusers.id as id', 'tasks.id as task_id', 'taskusers.is_bomb as is_bomb' ,'tasks.coins as coins', 'tasks.points as points', 'taskusers.done as done', 'taskusers.created_at as created_at', 'taskusers.completed_at as completed_at'  )          
   .then(tasks => {      
       return res.json({error: false, tasks });        
   })
@@ -42,21 +42,140 @@ tasksgame.getTaskElements= function(req, res, next) {
 };
 
 
+function bombExplosion(taskuser_id, user_id, mypoints, taskpoints, total_points, taskcoins, mylevel){
 
-tasksgame.redeemTask= function(req, res, next) {
+    return knex.transaction( trx => {
 
+          let p = []; let q;   
+
+          let now = new Date();    
+
+          q = knex('taskusers')
+              .where({ id: taskuser_id })
+              .update({ bomb_status: 1, done: true, completed_at: now }).transacting(trx);
+
+          p.push(q);        
+            
+          q = knex('jewels')
+              .where({ user_id, jeweltype_id: 1 })
+              .decrement('count', taskcoins)
+              .decrement('total_count', taskcoins)
+              .transacting(trx);  
+
+          p.push(q);         
+
+          let i=1, flag = true;
+          let totalpoints;
+          let newlevel;
+          let newmaxlevelpoints;
+
+          if( mypoints > taskpoints ){
+            newscore = mypoints-taskpoints;
+            totalpoints = total_points - taskpoints;
+            newlevel = mylevel;
+            newmaxlevelpoints = level_max[newlevel-1];
+            flag = false;
+          }
+
+          while(flag){
+
+            if( mypoints + level_max[mylevel-1-i] > taskpoints ){
+              newscore = mypoints + level_max[mylevel-1-i] - taskpoints;
+              totalpoints = total_points - taskpoints;
+              newlevel = mylevel-i;
+              newmaxlevelpoints = level_max[newlevel-1];
+              i++;
+              flag = false;
+            }
+
+          }         
+                 
+
+          q = knex('scores')
+              .where({ user_id })
+              .update({ level: newlevel, points: newscore, max_level_points: newmaxlevelpoints, total_points: totalpoints })                  
+              .transacting(trx);  
+
+          p.push(q);   
+
+
+          Promise.all(p)             
+          .then( values => {
+
+              for( let i=0; i<values.length; i++ ){
+                //console.log('>>>>>>>'+values[i]);
+                if(values[i] == 0 ){                  
+                  throw new Error('Transaction failed');
+                }
+              }
+                        
+
+          })
+          .then(trx.commit)
+          .catch(trx.rollback)    
+
+    });
+    
+
+}
+
+
+
+tasksgame.explodeBomb= function(req, res, next) {
 
   //req.body.id
   //req.body.task_id
-  //req.user.id  
+  //req.user.id
+    curr_time = new Date();
+
+    knex('taskusers')
+    .where( { 'taskusers.user_id' : req.user.id, 'taskusers.task_id': req.body.task_id, 'taskusers.id': req.body.id,'taskusers.done': false } ) 
+    .where('taskusers.is_bomb', '>', 0)
+    .where('taskusers.completed_at', '<=', curr_time ) 
+    .where('taskusers.bomb_status', '=', 0)
+    .join('tasks', 'taskusers.task_id', '=', 'tasks.id' )  
+    .join('scores', 'taskusers.user_id', '=', 'scores.user_id' )
+    .select( 'taskdetails.jeweltype_id as task_jewels_id', 'scores.points as mypoints', 'scores.level as mylevel', 'scores.max_level_points as max_level_points',
+    'scores.total_points as total_points', 'tasks.coins as taskcoins', 'tasks.points as taskpoints', 'taskusers.is_bomb as is_bomb', 'taskusers.completed_at as completed_at' )
+    .then( results => {
+
+        if(results.length == 0)
+          throw new Error('Invalid Task');
+
+
+        bombExplosion(req.body.id, req.user.id, results[0].mypoints, results[0].taskpoints, results[0].total_points, results[0].taskcoins, results[0].mylevel)
+        .then(msg=>{
+
+          return res.json({ error: false })
+
+        }).catch( err => {
+          next(err);
+        })
+
+    }).catch( err => {
+      next(err);
+    })
+
+}
+
+
+
+
+tasksgame.redeemTask= function(req, res, next) {
+
+  //req.body.id
+  //req.body.task_id
+  //req.user.id
 
   let curr_time = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
   curr_time = new Date(curr_time);
+
 
   knex('taskusers')
   .where( { 'taskusers.user_id' : req.user.id, 'taskusers.task_id': req.body.task_id, 'taskusers.id': req.body.id,
     'taskusers.done': false } )
   .where('taskusers.created_at', '<', curr_time )    
+  //.where('tasks.is_bomb', '=', 0)
   .whereRaw('?? = ??', ['jewels.jeweltype_id', 'taskdetails.jeweltype_id'])  
   .join('taskdetails', 'taskdetails.task_id', '=', 'taskusers.task_id')
   .join('tasks', 'taskusers.task_id', '=', 'tasks.id' )   
@@ -64,13 +183,33 @@ tasksgame.redeemTask= function(req, res, next) {
   .join('scores', 'taskusers.user_id', '=', 'scores.user_id' )
   .select( 'jewels.jeweltype_id as myjewels_id', 'jewels.count as myjewels_count', 'taskdetails.jeweltype_id as task_jewels_id', 
   'taskdetails.count as task_jewels_count', 'scores.points as mypoints', 'scores.level as mylevel', 'scores.max_level_points as max_level_points',
-  'scores.total_points as total_points', 'tasks.coins as taskcoins', 'tasks.points as taskpoints' )
+  'scores.total_points as total_points', 'tasks.coins as taskcoins', 'tasks.points as taskpoints', 'taskusers.is_bomb as is_bomb', 'taskusers.completed_at as completed_at' )
   .then( results => {
 
     
 
     if(results.length == 0)
        throw new Error('Invalid Task');
+
+    let activebomb = false;
+    if(results[0].completed_at !== null && results[0].is_bomb > 0  ){
+      let bomb_explode_time = new Date(results[0].completed_at)
+      if(bomb_explode_time <= curr_time){  
+        
+          bombExplosion(req.body.id, req.user.id, results[0].mypoints, results[0].taskpoints, results[0].total_points, results[0].taskcoins, results[0].mylevel)
+          .then(msg=>{
+
+            throw new Error('Bomb Exploded...cannot difuse bomb.'); 
+
+          }).catch( err => {
+            next(err);
+          })       
+        
+      }
+        activebomb = true;
+    }
+
+   
 
 
     let checktaskcompleted = true; 
@@ -110,40 +249,60 @@ tasksgame.redeemTask= function(req, res, next) {
               let now = new Date();
               
 
-              q = knex('taskusers')
-                  .where({ id: req.body.id })
-                  .update({ done: true, completed_at: now }).transacting(trx);
+              if(activebomb){
 
-              p.push(q);     
+                q = knex('taskusers')
+                    .where({ id: req.body.id })
+                    .update({ bomb_status: 2, done: true, completed_at: now }).transacting(trx);
 
+                p.push(q);  
 
-              q = knex('jewels')
-                  .where({ user_id: req.user.id, jeweltype_id: 1 })
-                  .increment('count', results[0].taskcoins)
-                  .increment('total_count', results[0].taskcoins)
-                  .transacting(trx);  
+              }else{
 
-              p.push(q);      
+                q = knex('taskusers')
+                    .where({ id: req.body.id })
+                    .update({  done: true, completed_at: now }).transacting(trx);
 
-              let newscore = results[0].mypoints + results[0].taskpoints;
-              let total_points = results[0].total_points + results[0].taskpoints;
+                p.push(q);  
 
-              let newlevel = results[0].mylevel;
-              let newmaxlevelpoints = results[0].max_level_points;
+              }         
+             
               
-              if(newscore > results[0].max_level_points){
-                newscore = newscore - results[0].max_level_points;
-                newlevel ++;
-                newmaxlevelpoints = level_max[ newlevel - 1 ];
+              
 
-              }          
+              if(!activebomb){
+                
+                q = knex('jewels')
+                    .where({ user_id: req.user.id, jeweltype_id: 1 })
+                    .increment('count', results[0].taskcoins)
+                    .increment('total_count', results[0].taskcoins)
+                    .transacting(trx);  
 
-              q = knex('scores')
-                  .where({ user_id: req.user.id})
-                  .update({ level: newlevel, points: newscore, max_level_points: newmaxlevelpoints, total_points })                  
-                  .transacting(trx);  
+                p.push(q);  
+                
 
-              p.push(q);
+                let newscore = results[0].mypoints + results[0].taskpoints;
+                let total_points = results[0].total_points + results[0].taskpoints;
+
+                let newlevel = results[0].mylevel;
+                let newmaxlevelpoints = results[0].max_level_points;
+                
+                if(newscore > results[0].max_level_points){
+                  newscore = newscore - results[0].max_level_points;
+                  newlevel ++;
+                  newmaxlevelpoints = level_max[ newlevel - 1 ];
+
+                }          
+
+                q = knex('scores')
+                    .where({ user_id: req.user.id})
+                    .update({ level: newlevel, points: newscore, max_level_points: newmaxlevelpoints, total_points })                  
+                    .transacting(trx);  
+
+                p.push(q);
+
+              }
+
 
               Promise.all(p)             
               .then( values => {
@@ -225,14 +384,14 @@ function getTaskRange(level, task_type){
 tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
 
 
-  knex('taskusers').where({ user_id: req.user.id, done: false })
+  knex('taskusers').where({ user_id: req.user.id, is_bomb: 0, done: false })
   .count('id as c')
   .max('created_at as max_created_at')
   .then( taskuser => {
 
       console.log( taskuser[0].c, taskuser[0].max_created_at);
 
-      if( taskuser[0].c < 8 ){
+      if( taskuser[0].c < 5 ){
 
             knex('scores').where({ user_id: req.user.id })
             .select()
@@ -244,7 +403,7 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                 onehr_ago.setHours(onehr_ago.getHours() - prop_hr_ago);
 
                 knex('taskusers')
-                .where({ 'taskusers.user_id' : req.user.id, 'taskusers.done' : true })
+                .where({ 'taskusers.user_id' : req.user.id, 'taskusers.done' : true, 'taskusers.is_bomb': 0 })
                 .where('completed_at', '>=', onehr_ago)
                 .join('tasks', 'taskusers.task_id', '=', 'tasks.id' )
                 .orderBy('taskusers.completed_at', 'desc')
