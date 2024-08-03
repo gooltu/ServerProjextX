@@ -70,14 +70,6 @@ exports.up = function(knex, Promise) {
     })
   })
   .then(() => {
-    return knex.schema.createTable('walletjewelprice', function(table){
-      table.increments('id');
-      table.integer('jeweltype_id').unsigned().notNull();
-      table.integer('count').notNull();
-      table.decimal('money', [5], [2] ).notNull();      
-    })
-  })
-  .then(() => {
     return knex.schema.createTable('tasks', function(table){
       table.increments('id');          
       table.integer('coins').nullable();
@@ -111,16 +103,6 @@ exports.up = function(knex, Promise) {
       table.foreign('user_id').references('jcusers.id');      
     })
   })  
-  .then(() => {
-    return knex.schema.createTable('bomblogs', function(table){
-      table.increments('id');
-      table.integer('taskusers_id').unsigned().notNull(); 
-      table.timestamp('completed_at').notNull(); 
-      table.integer('bomb_status').defaultTo(0); //0 active bomb, 1 exploded bomb, 2   difused bomb
-      table.index(['taskusers_id']);
-      table.foreign('taskusers_id').references('taskusers.id');         
-    })
-  })
   .then(() => {
     return knex.schema.createTable('gifttasks', function(table){
       table.increments('id');
@@ -332,29 +314,28 @@ exports.down = function(knex, Promise) {
   return Promise.all([
     knex.schema.dropTableIfExists('jcusers'),
     knex.schema.dropTableIfExists('invite'),
-    knex.schema.dropTableIfExists('blocked'),    
-    knex.schema.dropTableIfExists('groups'),
-    knex.schema.dropTableIfExists('groupmembers'),
-    knex.schema.dropTableIfExists('chats'),
-    knex.schema.dropTableIfExists('groupchats'),
     knex.schema.dropTableIfExists('scores'),
     knex.schema.dropTableIfExists('jeweltype'),
     knex.schema.dropTableIfExists('jewels'),
+    knex.schema.dropTableIfExists('tasks'),
     knex.schema.dropTableIfExists('taskdetails'),
     knex.schema.dropTableIfExists('taskusers'),
+    knex.schema.dropTableIfExists('giftrasks'),
+    knex.schema.dropTableIfExists('gifttaskdetails'),
+    knex.schema.dropTableIfExists('gifttaskusers'),
     knex.schema.dropTableIfExists('achievements'),
     knex.schema.dropTableIfExists('achievementusers'),
     knex.schema.dropTableIfExists('factory'),
     knex.schema.dropTableIfExists('factorymaterial'),
     knex.schema.dropTableIfExists('factoryuser'),
     knex.schema.dropTableIfExists('factorylogs'),
-    knex.schema.dropTableIfExists('market'),
     knex.schema.dropTableIfExists('wallet'),
-    knex.schema.dropTableIfExists('moneytogive'),
-    knex.schema.dropTableIfExists('prize'),
+    knex.schema.dropTableIfExists('walletlog'),
+    knex.schema.dropTableIfExists('market'),
     knex.schema.dropTableIfExists('diamondlog'), 
     knex.schema.dropTableIfExists('coinlog'), 
-    knex.schema.dropTableIfExists('pointlog')
+    knex.schema.dropTableIfExists('pointlog'),
+    knex.schema.dropTableIfExists('allgifts')
   ])
 };
 
