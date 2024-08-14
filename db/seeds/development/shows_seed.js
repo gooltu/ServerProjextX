@@ -4,7 +4,7 @@ let Promise = require('bluebird');
 exports.seed = function(knex) {
   // Deletes ALL existing entries
 
-  return Promise.join(
+  return Promise.all(
     // Deletes ALL existing entries
     //knex('jeweltype').del()
     //knex('tasks').del(),

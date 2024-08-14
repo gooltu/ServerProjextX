@@ -10,6 +10,7 @@ var controllers = module.exports = {
   tasksgift : require('./tasksgift'),
   achievements : require('./achievements'),
   factory : require('./factory'),
-  wallet :  require('./wallet')
+  wallet :  require('./wallet'),
+  market :  require('./market')
 
 };

@@ -248,7 +248,8 @@ exports.up = function(knex, Promise) {
       table.timestamp('buying_time').nullable();
       table.index(['jeweltype_id']);
       table.index(['seller_user_id']); 
-      table.index(['buyer_user_id']);   
+      table.index(['buyer_user_id']); 
+      table.index(['listed_at']);   
       table.foreign('jeweltype_id').references('jeweltype.id');    
       table.foreign('seller_user_id').references('jcusers.id');  
       table.foreign('buyer_user_id').references('jcusers.id');  

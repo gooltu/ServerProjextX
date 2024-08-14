@@ -48,8 +48,10 @@ router.post('/listAllJIDs', passport.authenticate('jwt'), controller.contacts.li
 
 router.post('/resetUser', passport.authenticate('jwt'), controller.contacts.resetUser);
 
-
-
+router.post('/getAllMarketItems', passport.authenticate('jwt'),  controller.market.getAllMarketItems);
+router.post('/getMyMarketItems', passport.authenticate('jwt'),  controller.market.getMyMarketItems);
+router.post('/listJewelInMarket', passport.authenticate('jwt'),  controller.market.listJewelInMarket);
+router.post('/buyListedJewel', passport.authenticate('jwt'),  controller.market.buyListedJewel);
 
 router.get('/getWallet', passport.authenticate('jwt'), controller.wallet.getWallet );
 router.get('/getWalletJewelPrices', passport.authenticate('jwt'), controller.wallet.getWalletJewelPrices );
@@ -77,6 +79,7 @@ router.post('/checkGiftTaskCompletion', passport.authenticate('jwt'),  controlle
 
 router.post('/getTasks', passport.authenticate('jwt'),  controller.tasksgame.getTasks);
 router.post('/getTaskElements', passport.authenticate('jwt'),  controller.tasksgame.getTaskElements)
+router.post('/explodeBomb', passport.authenticate('jwt'),  controller.tasksgame.explodeBomb)
 router.post('/redeemTask', passport.authenticate('jwt'),  controller.tasksgame.redeemTask);
 router.post('/checkTaskCompletion', passport.authenticate('jwt'),  controller.tasksgame.checkTaskCompletion);
 router.get('/getNewTaskOnTaskCompletion', passport.authenticate('jwt'),  controller.tasksgame.getNewTaskOnTaskCompletion);

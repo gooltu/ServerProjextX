@@ -151,10 +151,10 @@ module.exports = function(userid) {
                                                       user_id: userid,
                                                       achievement_id: 2                          
                                                     },
-                                                    {
-                                                      user_id: userid,
-                                                      achievement_id: 3                         
-                                                    },
+                                                    // {
+                                                    //   user_id: userid,
+                                                    //   achievement_id: 3                         
+                                                    // },
                                                     {
                                                       user_id: userid,
                                                       achievement_id: 4                          
@@ -163,10 +163,10 @@ module.exports = function(userid) {
                                                       user_id: userid,
                                                       achievement_id: 5                          
                                                     },
-                                                    {
-                                                      user_id: userid,
-                                                      achievement_id: 6                          
-                                                    },
+                                                    // {
+                                                    //   user_id: userid,
+                                                    //   achievement_id: 6                          
+                                                    // },
                                                     {
                                                       user_id: userid,
                                                       achievement_id: 7                          
@@ -175,10 +175,10 @@ module.exports = function(userid) {
                                                       user_id: userid,
                                                       achievement_id: 8                          
                                                     },
-                                                    {
-                                                      user_id: userid,
-                                                      achievement_id: 9                          
-                                                    },
+                                                    // {
+                                                    //   user_id: userid,
+                                                    //   achievement_id: 9                          
+                                                    // },
                                                     {
                                                       user_id: userid,
                                                       achievement_id: 10                          
@@ -187,10 +187,10 @@ module.exports = function(userid) {
                                                       user_id: userid,
                                                       achievement_id: 11                          
                                                     },
-                                                    {
-                                                      user_id: userid,
-                                                      achievement_id: 12                          
-                                                    },
+                                                    // {
+                                                    //   user_id: userid,
+                                                    //   achievement_id: 12                          
+                                                    // },
                                                     {
                                                       user_id: userid,
                                                       achievement_id: 13                          
@@ -199,10 +199,10 @@ module.exports = function(userid) {
                                                       user_id: userid,
                                                       achievement_id: 14                          
                                                     },
-                                                    {
-                                                      user_id: userid,
-                                                      achievement_id: 15                          
-                                                    },
+                                                    // {
+                                                    //   user_id: userid,
+                                                    //   achievement_id: 15                          
+                                                    // },
                                                     {
                                                       user_id: userid,
                                                       achievement_id: 16                          
@@ -294,19 +294,21 @@ module.exports = function(userid) {
                                               {
                                                 user_id: userid,
                                                 task_id: 5                          
-                                              },
-                                              {
-                                                user_id: userid,
-                                                task_id: 6                          
-                                              },
-                                              {
-                                                user_id: userid,
-                                                task_id: 7                          
-                                              },
-                                              {
-                                                user_id: userid,
-                                                task_id: 8                          
-                                              }]
+                                              }
+                                              // ,
+                                              // {
+                                              //   user_id: userid,
+                                              //   task_id: 6                          
+                                              // },
+                                              // {
+                                              //   user_id: userid,
+                                              //   task_id: 7                          
+                                              // },
+                                              // {
+                                              //   user_id: userid,
+                                              //   task_id: 8                          
+                                              // }
+                                            ]
 
                                             ).transacting(trx);
         })           

@@ -2,14 +2,13 @@
 
 module.exports = {  
   production: {
-    client: 'mysql',
+    client: 'mysql2',
     connection: {
       host:  process.env.durl,
       user: process.env.dusername,
       password:  process.env.dpassword,
       database: 'projectx',
-      charset: 'utf8',
-      timezone: 'UTC',
+      charset: 'utf8',      
       dateStrings: true
     }
   }

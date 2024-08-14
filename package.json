@@ -1,12 +1,12 @@
 {
   "name": "serverprojectx",
   "version": "0.0.1",
-  "private": true, 
+  "private": true,
   "engines": {
     "node": ">=14.0.0"
-  }, 
+  },
   "scripts": {
-    "start": "node ./bin/www"    
+    "start": "node ./bin/www"
   },
   "dependencies": {
     "aws-sdk": "2.1014.0",
@@ -14,15 +14,15 @@
     "body-parser": "1.19.0",
     "express": "4.17.1",
     "express-session": "1.17.1",
+    "firebase-admin": "9.5.0",
+    "google-libphonenumber": "3.2.25",
+    "jsonwebtoken": "8.5.1",
     "knex": "0.95.11",
-    "mysql": "2.18.1",
+    "mysql2": "^3.11.0",
+    "node-fetch": "2.6.1",
     "passport": "0.4.1",
     "passport-jwt": "4.0.0",
-    "node-fetch": "2.6.1",
     "speakeasy": "2.0.0",
-    "weeknumber": "1.1.2",
-    "jsonwebtoken": "8.5.1",
-    "firebase-admin": "9.5.0",
-    "google-libphonenumber": "3.2.25"
+    "weeknumber": "1.1.2"
   }
 }

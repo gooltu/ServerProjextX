@@ -1,9 +1,9 @@
 let Promise = require('bluebird');
 exports.seed = function(knex) {
-  // Deletes ALL existing entries
+  
 
-  return Promise.join(
-    // Deletes ALL existing entries
+  return Promise.all(
+    
     
     knex('factorymaterial').del(),
     knex('factory').del()
@@ -18,8 +18,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 3, count: 9 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 10 })
                          
@@ -37,8 +37,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 4, count: 6 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 20 })
                          
@@ -56,8 +56,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 6, count: 9 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 60 })
                          
@@ -75,8 +75,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 7, count: 6 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 120 })
                          
@@ -94,8 +94,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 9, count: 6 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 110 })
                          
@@ -113,8 +113,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 10, count: 3 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 220 })
                          
@@ -132,8 +132,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 12, count: 6 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 160 })
                          
@@ -151,8 +151,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 13, count: 3 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 320 })
                          
@@ -170,8 +170,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 15, count: 3 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 210 })
                          
@@ -189,8 +189,8 @@ exports.seed = function(knex) {
                    })
                    .then(function(id){
                       
-                      return Promise.join(
-                        // Deletes ALL existing entries
+                      return Promise.all(
+                        
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 16, count: 3 }),
                         knex.table('factorymaterial').insert({ factory_id: id, jeweltype_id: 1, count: 415 })
                          
