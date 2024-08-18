@@ -86,6 +86,7 @@ router.get('/getNewTaskOnTaskCompletion', passport.authenticate('jwt'),  control
 
 
 router.post('/pickJewel', passport.authenticate('jwt'),  controller.game.pickJewel);
+router.post('/bulkPickJewel', passport.authenticate('jwt'),  controller.game.bulkPickJewel);
 router.get('/getGameState', passport.authenticate('jwt'),  controller.game.getGameState);
 
 router.get('/getFactories', passport.authenticate('jwt'),  controller.factory.getFactories);

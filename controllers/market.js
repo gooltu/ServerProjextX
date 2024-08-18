@@ -86,7 +86,7 @@ market.listJewelInMarket = function(req, res, next) {
 
             let now = new Date();
 
-            q = knex('taskusers').insert({ seller_user_id: req.user.id, jeweltype_id: req.body.jeweltype_id, count: req.body.qty, mmoney: req.body.price, listed_at: now })
+            q = knex('market').insert({ seller_user_id: req.user.id, jeweltype_id: req.body.jeweltype_id, count: req.body.qty, money: req.body.price, listed_at: now })
 
             p.push(q);            
 
@@ -131,10 +131,10 @@ market.listJewelInMarket = function(req, res, next) {
 market.buyListedJewel = function(req, res, next) {
 
   //req.body.market_id
+
+  let totalprice, qty, jtype, seller_id;
   
   knex.transaction(trx => {
-
-
 
           knex('market')
             .where({ id: req.body.market_id })
@@ -146,9 +146,16 @@ market.buyListedJewel = function(req, res, next) {
 
               if ( item.length == 0)
                 throw new Error('Invalid query');
+
+              totalprice = item[0].money * item[0].count;
+              qty = item[0].count;
+              jtype = item[0].jeweltype_id;
+              seller_id = item[0].seller_user_id;
+
+              console.log(totalprice, qty);
               
                 return knex('wallet').where({ user_id: req.user.id })
-                      .andWhere('money', '>=', item[0].money)
+                      .andWhere('money', '>=', totalprice)
                       .transacting(trx)
                       .forUpdate()
                       .select()
@@ -157,7 +164,7 @@ market.buyListedJewel = function(req, res, next) {
             .then(entry => {
 
               if ( entry.length == 0)
-                throw new Error('Invalid query');
+                throw new Error('Not enough money');
 
               return knex('jewels')
                     .where({ user_id : req.user.id })
@@ -169,31 +176,37 @@ market.buyListedJewel = function(req, res, next) {
 
             })
             .then( jewelcount => {
-
-              if(jewelcount[0].sum + item[0].count > 25)
-                throw new Error('Jewel Store is full');
+              //console.log(jewelcount[0].sum + qty);
+              let storesum = jewelcount[0].sum * 1;
+               
+              if((25-storesum)<qty)
+                throw new Error('Not enough space');
 
               let p = []; let q;
 
-              let total = item[0].money * item[0].count;
+              //let total = item[0].money * item[0].count;
 
               let now  = new Date();
 
-              q = knex('walletlog').insert({ user_id: req.user.id, money: (-1)*total, tag:'Jewel bought from market' }).transacting(trx);
+              q = knex('walletlog').insert({ user_id: req.user.id, money: (-1)*totalprice, tag:'Jewel bought from market' }).transacting(trx);
 
               p.push(q);
 
-              q = knex('wallet').where({ user_id: req.user.id }).decrement( 'money', total ).transacting(trx);
+              q = knex('wallet').where({ user_id: req.user.id }).decrement( 'money', totalprice ).transacting(trx);
 
               p.push(q);
 
-              q = knex('market').insert({ buyer_user_id: req.user.id, buying_time: now }).transacting(trx);
+              q = knex('wallet').where({ user_id: seller_id }).increment( 'money', (0.8* totalprice)).transacting(trx);
 
               p.push(q);
 
-              q = knex('jewels').where({user_id: req.user.id, jeweltype_id: item[0].jeweltype_id  })
-              .increment('count', item[0].count)
-              .increment('total_count', item[0].count)
+              q = knex('market').update({ buyer_user_id: req.user.id, buying_time: now }).transacting(trx);
+
+              p.push(q);
+
+              q = knex('jewels').where({user_id: req.user.id, jeweltype_id: jtype  })
+              .increment('count', qty)
+              .increment('total_count', qty)
               .transacting(trx);
 
               p.push(q);

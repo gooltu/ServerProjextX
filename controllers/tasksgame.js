@@ -65,46 +65,52 @@ function bombExplosion(taskuser_id, user_id, mypoints, taskpoints, total_points,
 
           p.push(q);         
 
-          let i=1, flag = true;
+          let flag = true;
           let totalpoints;
           let newlevel;
           let newmaxlevelpoints;
           let newscore;
-
-          if( mypoints > taskpoints ){
+          console.log('mypoints ', mypoints, )
+          if( mypoints > Math.abs(taskpoints) ){
             newscore = mypoints-Math.abs(taskpoints);
             totalpoints = total_points - Math.abs(taskpoints);
             newlevel = mylevel;
             newmaxlevelpoints = level_max[newlevel-1];
             flag = false;
           }
+          
+          newlevel = mylevel;
+          let sum = mypoints;
+          let i=1;
 
-          let sum = 0;
-          while(flag){    
-
-            newlevel = mylevel;
-            sum = mypoints;
+          while(flag){               
 
             if((newlevel-1-i)<0){
-              newscore = mypoints;
-              totalpoints = total_points;
+              console.log('first ')
+              newscore = 0;
+              totalpoints = 0;
+              newlevel = 1;
+              newmaxlevelpoints = level_max[newlevel-1];
+              flag = false;
             }else{
+
+              console.log('second ')
+
               sum = sum + level_max[newlevel-1-i];
 
-              if( sum > taskpoints ){
+              if( sum > Math.abs(taskpoints) ){
                 newscore = sum - Math.abs(taskpoints);
                 totalpoints = total_points - Math.abs(taskpoints);
-                newlevel = newlevel-1;
-                newmaxlevelpoints = level_max[newlevel-1];
-                i++;
+                newlevel = newlevel-i;
+                newmaxlevelpoints = level_max[newlevel-1];                
                 flag = false;
               }
-              
-            }
 
-            
+              i++;
 
-          }         
+            }           
+
+          }//while loop end         
                  
 
           q = knex('scores')
@@ -142,16 +148,15 @@ tasksgame.explodeBomb= function(req, res, next) {
   //req.body.id
   //req.body.task_id
   //req.user.id
-    curr_time = new Date();
+    let curr_time = new Date();
 
     knex('taskusers')
-    .where( { 'taskusers.user_id' : req.user.id, 'taskusers.task_id': req.body.task_id, 'taskusers.id': req.body.id,'taskusers.done': false } ) 
+    .where( { 'taskusers.user_id' : req.user.id, 'taskusers.task_id': req.body.task_id, 'taskusers.id': req.body.id,'taskusers.done': false, 'taskusers.bomb_status': 0 } ) 
     .where('taskusers.is_bomb', '>', 0)
-    .where('taskusers.completed_at', '<=', curr_time ) 
-    .where('taskusers.bomb_status', '=', 0)
+    .where('taskusers.completed_at', '<=', curr_time )    
     .join('tasks', 'taskusers.task_id', '=', 'tasks.id' )  
     .join('scores', 'taskusers.user_id', '=', 'scores.user_id' )
-    .select( 'taskdetails.jeweltype_id as task_jewels_id', 'scores.points as mypoints', 'scores.level as mylevel', 'scores.max_level_points as max_level_points',
+    .select( 'scores.points as mypoints', 'scores.level as mylevel', 'scores.max_level_points as max_level_points',
     'scores.total_points as total_points', 'tasks.coins as taskcoins', 'tasks.points as taskpoints', 'taskusers.is_bomb as is_bomb', 'taskusers.completed_at as completed_at' )
     .then( results => {
 
@@ -381,7 +386,7 @@ tasksgame.checkTaskCompletion= function(req, res, next) {
 tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
 
 
-  knex('taskusers').where({ user_id: req.user.id, is_bomb: 0, done: false })
+  knex('taskusers').where({ user_id: req.user.id, done: false })
   .count('id as c')
   .max('created_at as max_created_at')
   .then( taskuser => {
@@ -421,9 +426,10 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
 
                     let sum_points = recentlycompleted.reduce( f, {xp:0}).xp;
                     let probablity_bomb = Math.floor(Math.random() * (10 - 1 + 1)) + 1;
+                    console.log('Sum', sum_points);
 
                     if(sum_points>100){
-
+                      console.log('FIRST');
                       let bombtime = new Date();                     
                       bombtime.setTime(bombtime.getTime() +  5*60*1000 );
 
@@ -433,28 +439,31 @@ tasksgame.getNewTaskOnTaskCompletion = function(req, res, next) {
                       let bombtaskid4 = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
                       let bombtaskid5 = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
 
-                      return knex('taskusers').insert(
+                      return knex('taskusers').insert([
                         { user_id: req.user.id, task_id: bombtaskid1, is_bomb:1, bomb_status: 0, completed_at:bombtime },
                         { user_id: req.user.id, task_id: bombtaskid2, is_bomb:1, bomb_status: 0, completed_at:bombtime },
                         { user_id: req.user.id, task_id: bombtaskid3, is_bomb:1, bomb_status: 0, completed_at:bombtime },
                         { user_id: req.user.id, task_id: bombtaskid4, is_bomb:1, bomb_status: 0, completed_at:bombtime },
-                        { user_id: req.user.id, task_id: bombtaskid5, is_bomb:1, bomb_status: 0, completed_at:bombtime }
+                        { user_id: req.user.id, task_id: bombtaskid5, is_bomb:1, bomb_status: 0, completed_at:bombtime }]
                       );
 
                     }else if(probablity_bomb<=3){
                       //bomb
+                      console.log('BOMB');
                       let bombtime = new Date();                
                       let bombtaskid = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
                       bombtime.setTime(bombtime.getTime() +  5*60*1000 );
                       return knex('taskusers').insert({ user_id: req.user.id, task_id: bombtaskid, is_bomb:1, bomb_status: 0, completed_at:bombtime });
                     }else{
                       //normal task
+                      console.log('Normal Task Level', score_level);
                       let taskid;
                       if(score_level <= 2)
                         taskid = Math.floor(Math.random() * (50 - 1 + 1)) + 1;
                       else
                         taskid = Math.floor(Math.random() * (200 - 101 + 1)) + 101;
-                      return knex('taskusers').insert({ user_id: req.user.id, task_id: 101, is_bomb:0, bomb_status: -1 });
+
+                      return knex('taskusers').insert({ user_id: req.user.id, task_id: taskid, is_bomb:0, bomb_status: -1 });
                     }
 
                 })
