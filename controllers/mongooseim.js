@@ -8,7 +8,8 @@ let admin = require('firebase-admin');
 
 
 
-const environment = process.env.NODE_ENV || 'development';
+//const environment = process.env.NODE_ENV || 'development';
+const environment = 'development'
 let serviceAccount;
 
 // console.log('PrivateKey');
