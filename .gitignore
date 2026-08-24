@@ -39,5 +39,6 @@ test_enabler_routes.js
 
 package-lock.json
 
+.env
 
 

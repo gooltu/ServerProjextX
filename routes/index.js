@@ -12,13 +12,13 @@ var controller = require('../controllers');
 
 
 /* GET home page. */
-router.get('/',  function(req, res, next) {
-  	return res.json({ message : 'helloworld:'+process.env.NODE_ENV });
+router.get('/', function (req, res, next) {
+	return res.json({ message: 'helloworld:' + process.env.NODE_ENV });
 });
 
-router.get('/getGameServerTime',  function(req, res, next) {
+router.get('/getGameServerTime', function (req, res, next) {
 	let d = new Date();
-  	return res.json({ time : d.toUTCString() });
+	return res.json({ time: d.toUTCString() });
 });
 
 
@@ -48,65 +48,65 @@ router.post('/listAllJIDs', passport.authenticate('jwt'), controller.contacts.li
 
 router.post('/resetUser', passport.authenticate('jwt'), controller.contacts.resetUser);
 
-router.post('/getAllMarketItems', passport.authenticate('jwt'),  controller.market.getAllMarketItems);
-router.post('/getMyMarketItems', passport.authenticate('jwt'),  controller.market.getMyMarketItems);
-router.post('/listJewelInMarket', passport.authenticate('jwt'),  controller.market.listJewelInMarket);
-router.post('/buyListedJewel', passport.authenticate('jwt'),  controller.market.buyListedJewel);
+router.post('/getAllMarketItems', passport.authenticate('jwt'), controller.market.getAllMarketItems);
+router.post('/getMyMarketItems', passport.authenticate('jwt'), controller.market.getMyMarketItems);
+router.post('/listJewelInMarket', passport.authenticate('jwt'), controller.market.listJewelInMarket);
+router.post('/buyListedJewel', passport.authenticate('jwt'), controller.market.buyListedJewel);
 
-router.get('/getWallet', passport.authenticate('jwt'), controller.wallet.getWallet );
-router.get('/getWalletJewelPrices', passport.authenticate('jwt'), controller.wallet.getWalletJewelPrices );
+router.get('/getWallet', passport.authenticate('jwt'), controller.wallet.getWallet);
+router.get('/getWalletJewelPrices', passport.authenticate('jwt'), controller.wallet.getWalletJewelPrices);
 router.post('/redeemMoney', passport.authenticate('jwt'), controller.wallet.redeemMoney);
 router.post('/buyJewelsFromWallet', passport.authenticate('jwt'), controller.wallet.buyJewelsFromWallet);
 router.get('/getAllGiftsWon', passport.authenticate('jwt'), controller.wallet.getAllGiftsWon);
-router.get('/emptyJewelStore', passport.authenticate('jwt'), controller.wallet.emptyJewelStore );
+router.get('/emptyJewelStore', passport.authenticate('jwt'), controller.wallet.emptyJewelStore);
 //router.post('/addMoney', passportUtils.isAuthenticated, jccookie.cookie , controller.wallet.addMoney);
-router.get('/listAllGifts', passport.authenticate('jwt'), controller.wallet.listAllGifts );
-router.get('/listAllGiftsUser', passport.authenticate('jwt'), controller.wallet.listAllGiftsUser );
-router.get('/updateGiftStatus', passport.authenticate('jwt'), controller.wallet.updateGiftStatus );
+router.get('/listAllGifts', passport.authenticate('jwt'), controller.wallet.listAllGifts);
+router.get('/listAllGiftsUser', passport.authenticate('jwt'), controller.wallet.listAllGiftsUser);
+router.get('/updateGiftStatus', passport.authenticate('jwt'), controller.wallet.updateGiftStatus);
 
 
-router.post('/getAchievements', passport.authenticate('jwt'),  controller.achievements.getAchievements);
-router.post('/getUsersAchievement', passport.authenticate('jwt'),  controller.achievements.getUsersAchievement);
-router.post('/redeemAchievement', passport.authenticate('jwt'),  controller.achievements.redeemAchievement);
+router.post('/getAchievements', passport.authenticate('jwt'), controller.achievements.getAchievements);
+router.post('/getUsersAchievement', passport.authenticate('jwt'), controller.achievements.getUsersAchievement);
+router.post('/redeemAchievement', passport.authenticate('jwt'), controller.achievements.redeemAchievement);
 
 router.get('/getCurrentCycle', passport.authenticate('jwt'), controller.tasksgift.getCurrentCycle);
-router.post('/getGiftTasks', passport.authenticate('jwt'),  controller.tasksgift.getGiftTasks);
-router.post('/getGiftTasksElements', passport.authenticate('jwt'),  controller.tasksgift.getGiftTasksElements);
-router.post('/getGiftTaskLevel', passport.authenticate('jwt'),  controller.tasksgift.getGiftTaskLevel);
-router.post('/redeemGiftTask', passport.authenticate('jwt'),  controller.tasksgift.redeemGiftTask);
-router.post('/checkGiftTaskCompletion', passport.authenticate('jwt'),  controller.tasksgift.checkGiftTaskCompletion);
+router.post('/getGiftTasks', passport.authenticate('jwt'), controller.tasksgift.getGiftTasks);
+router.post('/getGiftTasksElements', passport.authenticate('jwt'), controller.tasksgift.getGiftTasksElements);
+router.post('/getGiftTaskLevel', passport.authenticate('jwt'), controller.tasksgift.getGiftTaskLevel);
+router.post('/redeemGiftTask', passport.authenticate('jwt'), controller.tasksgift.redeemGiftTask);
+router.post('/checkGiftTaskCompletion', passport.authenticate('jwt'), controller.tasksgift.checkGiftTaskCompletion);
 
 
-router.post('/getTasks', passport.authenticate('jwt'),  controller.tasksgame.getTasks);
-router.post('/getTaskElements', passport.authenticate('jwt'),  controller.tasksgame.getTaskElements)
-router.post('/explodeBomb', passport.authenticate('jwt'),  controller.tasksgame.explodeBomb)
-router.post('/redeemTask', passport.authenticate('jwt'),  controller.tasksgame.redeemTask);
-router.post('/checkTaskCompletion', passport.authenticate('jwt'),  controller.tasksgame.checkTaskCompletion);
-router.get('/getNewTaskOnTaskCompletion', passport.authenticate('jwt'),  controller.tasksgame.getNewTaskOnTaskCompletion);
+router.post('/getTasks', passport.authenticate('jwt'), controller.tasksgame.getTasks);
+router.post('/getTaskElements', passport.authenticate('jwt'), controller.tasksgame.getTaskElements)
+router.post('/explodeBomb', passport.authenticate('jwt'), controller.tasksgame.explodeBomb)
+router.post('/redeemTask', passport.authenticate('jwt'), controller.tasksgame.redeemTask);
+router.post('/checkTaskCompletion', passport.authenticate('jwt'), controller.tasksgame.checkTaskCompletion);
+router.get('/getNewTaskOnTaskCompletion', passport.authenticate('jwt'), controller.tasksgame.getNewTaskOnTaskCompletion);
 
 
-router.post('/pickJewel', passport.authenticate('jwt'),  controller.game.pickJewel);
-router.post('/bulkPickJewel', passport.authenticate('jwt'),  controller.game.bulkPickJewel);
-router.get('/getGameState', passport.authenticate('jwt'),  controller.game.getGameState);
+router.post('/pickJewel', passport.authenticate('jwt'), controller.game.pickJewel);
+router.post('/bulkPickJewel', passport.authenticate('jwt'), controller.game.bulkPickJewel);
+router.get('/getGameState', passport.authenticate('jwt'), controller.game.getGameState);
 
-router.get('/getFactories', passport.authenticate('jwt'),  controller.factory.getFactories);
-router.post('/getUserFactory', passport.authenticate('jwt'),  controller.factory.getUserFactory);
-router.post('/startFactory', passport.authenticate('jwt'),  controller.factory.startFactory);
-router.post('/stopFactory', passport.authenticate('jwt'),  controller.factory.stopFactory);
-router.post('/flushFactory', passport.authenticate('jwt'),  controller.factory.flushFactory);
-router.post('/transferJewelsFromFactory', passport.authenticate('jwt'),  controller.factory.transferJewelsFromFactory);
-
-
+router.get('/getFactories', passport.authenticate('jwt'), controller.factory.getFactories);
+router.post('/getUserFactory', passport.authenticate('jwt'), controller.factory.getUserFactory);
+router.post('/startFactory', passport.authenticate('jwt'), controller.factory.startFactory);
+router.post('/stopFactory', passport.authenticate('jwt'), controller.factory.stopFactory);
+router.post('/flushFactory', passport.authenticate('jwt'), controller.factory.flushFactory);
+router.post('/transferJewelsFromFactory', passport.authenticate('jwt'), controller.factory.transferJewelsFromFactory);
 
 
-const environment = process.env.NODE_ENV || 'development';
 
-if(environment === 'development'){
 
-	require('./test_enabler_routes')(router, controller );
+// const environment = process.env.NODE_ENV || 'development';
 
-}
-	
+// if(environment === 'development'){
+
+// 	require('./test_enabler_routes')(router, controller );
+
+// }
+
 
 
 module.exports = router;

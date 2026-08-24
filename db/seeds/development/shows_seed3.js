@@ -2,15 +2,15 @@ let Promise = require('bluebird');
 exports.seed = function(knex) {
   // Deletes ALL existing entries
 
-  return Promise.all(
+  return Promise.all([
     // Deletes ALL existing entries
     knex('jcusers').del()
     //knex('tasks').del(),
     //knex('taskdetails').del(),
     //knex('achievements').del(),
     //knex('factory').del(),
-    //knex('factorymaterial').del()    
-  )
+    //knex('factorymaterial').del()
+  ])
   .then(()=>{
       return knex('jcusers').insert({
         id: 1,
