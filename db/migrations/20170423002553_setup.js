@@ -256,6 +256,26 @@ exports.up = function(knex, Promise) {
     })
   })
   .then(() => {
+    return knex.schema.createTable('marketwallet', function(table){
+      table.increments('id');
+      table.integer('user_id').unsigned().notNull();
+      table.decimal('money', [15], [2]).defaultTo(0.00).notNull();
+      table.index(['user_id']);      
+      table.foreign('user_id').references('jcusers.id'); 
+    })
+  })
+  .then(() => {
+    return knex.schema.createTable('marketwalletlog', function(table){
+      table.increments('id');
+      table.integer('user_id').unsigned().notNull();
+      table.decimal('money', [15], [2]).defaultTo(0.00).notNull();
+      table.string('tag').notNull();
+      table.timestamp('created_at').defaultTo(knex.fn.now());
+      table.index(['user_id']);
+      table.foreign('user_id').references('jcusers.id');
+    })
+  })
+  .then(() => {
     return knex.schema.createTable('diamondlog', function(table){
       table.increments('id');
       table.integer('user_id').unsigned().notNull();

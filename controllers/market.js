@@ -154,7 +154,7 @@ market.buyListedJewel = function(req, res, next) {
 
               console.log(totalprice, qty);
               
-                return knex('wallet').where({ user_id: req.user.id })
+                return knex('marketwallet').where({ user_id: req.user.id })
                       .andWhere('money', '>=', totalprice)
                       .transacting(trx)
                       .forUpdate()
@@ -188,15 +188,15 @@ market.buyListedJewel = function(req, res, next) {
 
               let now  = new Date();
 
-              q = knex('walletlog').insert({ user_id: req.user.id, money: (-1)*totalprice, tag:'Jewel bought from market' }).transacting(trx);
+              q = knex('marketwalletlog').insert({ user_id: req.user.id, money: (-1)*totalprice, tag:'Jewel bought from market' }).transacting(trx);
 
               p.push(q);
 
-              q = knex('wallet').where({ user_id: req.user.id }).decrement( 'money', totalprice ).transacting(trx);
+              q = knex('marketwallet').where({ user_id: req.user.id }).decrement( 'money', totalprice ).transacting(trx);
 
               p.push(q);
 
-              q = knex('wallet').where({ user_id: seller_id }).increment( 'money', (0.8* totalprice)).transacting(trx);
+              q = knex('marketwallet').where({ user_id: seller_id }).increment( 'money', (0.8* totalprice)).transacting(trx);
 
               p.push(q);
 
@@ -241,3 +241,9 @@ market.buyListedJewel = function(req, res, next) {
 };
 
 
+
+market.addMoneyToMarketWallet = function(req, res, next) {
+
+
+
+};

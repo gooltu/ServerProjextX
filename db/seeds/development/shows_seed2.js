@@ -2,13 +2,13 @@ let Promise = require('bluebird');
 exports.seed = function(knex) {
   
 
-  return Promise.all(
+  return Promise.all([
     
     
     knex('factorymaterial').del(),
     knex('factory').del()
        
-  ) 
+  ]) 
   .then(() => {    
 
         return knex.table('factory')
