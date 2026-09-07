@@ -33,7 +33,6 @@ knexfile.js
 
 knexfile_development.js
 
-test_enabler_routes.js
 
 .DS_Store
 
