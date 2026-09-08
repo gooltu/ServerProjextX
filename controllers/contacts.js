@@ -10,86 +10,85 @@ let contacts = module.exports;
 
 
 
-contacts.downloadContact= function(req, res, next) {
-  
-	  
-	  knex('jcusers')
-	  .where( 'id', req.body.id )
-	  .select( 'id', 'name', 'phone', 'status' )
-	  .then(jcusers => {
-	  	return res.json({ error:false, contact: jcusers[0] });
-	  })
-	  .catch(err => {
-	  	next(err);
-	  });
-	
+contacts.downloadContact = function (req, res, next) {
 
-};
 
-contacts.downloadContact_Phone= function(req, res, next) {
-  
-	  
-	  knex('jcusers')
-	  .where( 'phone', req.body.phone )
-	  .select( 'id','name', 'phone', 'status' )
-	  .then(jcusers => {
-	  	if(jcusers.length>0)
-	  		return res.json({ error:false, contact: jcusers[0] });
-	  	else{
-	  		let c = {};
-	  		return res.json({ error:false});
-	  	}
-	  })
-	  .catch(err => {
-	  	next(err);
-	  });
-	
-
-};
-
-contacts.getProfile= function(req, res, next) {
-
-		
-		knex('jcusers').where( 'jcusers.id', req.user.id )
-		.select('id', 'phone' ,'name', 'status', 'address', 'gender', 'dob', 'upi')
-		.then(profile => {
-				res.json({ error:false, profile: profile[0] });
+	knex('jcusers')
+		.where('id', req.body.id)
+		.select('id', 'name', 'phone', 'status')
+		.then(jcusers => {
+			return res.json({ error: false, contact: jcusers[0] });
 		})
 		.catch(err => {
-				next(err)
+			next(err);
+		});
+
+
+};
+
+contacts.downloadContact_Phone = function (req, res, next) {
+
+
+	knex('jcusers')
+		.where('phone', req.body.phone)
+		.select('id', 'name', 'phone', 'status', 'active')
+		.then(jcusers => {
+			if (jcusers.length > 0)
+				return res.json({ error: false, contact: jcusers[0] });
+			else {
+				return res.json({ error: false });
+			}
+		})
+		.catch(err => {
+			next(err);
+		});
+
+
+};
+
+contacts.getProfile = function (req, res, next) {
+
+
+	knex('jcusers').where('jcusers.id', req.user.id)
+		.select('id', 'phone', 'name', 'status', 'address', 'gender', 'dob', 'upi')
+		.then(profile => {
+			res.json({ error: false, profile: profile[0] });
+		})
+		.catch(err => {
+			next(err)
 		});
 
 };
 
 
-contacts.getUserProfile= function(req, res, next) {
-  
-		console.log('ID: '+ req.body.user_id);
+contacts.getUserProfile = function (req, res, next) {
 
-		if(!req.body.user_id){
-			let err = new Error('Invalid Data');		
-			next(err);
-		}
+	console.log('ID: ' + req.body.user_id);
 
-		let p = [];
+	if (!req.body.user_id) {
+		let err = new Error('Invalid Data');
+		next(err);
+	}
 
-		let p1 = knex('jcusers').where( 'jcusers.id' , req.body.user_id )
-				.join('scores', 'jcusers.id', '=', 'scores.user_id')
-				.select('jcusers.phone' ,'jcusers.name', 'scores.level', 'jcusers.status');
+	let p = [];
 
-		let p2 = knex('jewels').where( 'jewels.user_id' , req.body.user_id ).whereIn('jeweltype_id', [ 0, 1, 2 ]).select('jeweltype_id', 'count');
+	let p1 = knex('jcusers').where('jcusers.id', req.body.user_id)
+		.join('scores', 'jcusers.id', '=', 'scores.user_id')
+		.select('jcusers.phone', 'jcusers.name', 'scores.level', 'jcusers.status');
 
-		p.push(p1);
-		p.push(p2);
+	let p2 = knex('jewels').where('jewels.user_id', req.body.user_id).whereIn('jeweltype_id', [0, 1, 2]).select('jeweltype_id', 'count');
+
+	p.push(p1);
+	p.push(p2);
 
 
-		Promise.all(p)	
-		.then((values)=>{
+	Promise.all(p)
+		.then((values) => {
 			return res.json({ error: false, user: values[0], jewels: values[1] });
 		})
-		.catch( err => {
+		.catch(err => {
 			next(err);
-		});	
+		});
 
 
 };
@@ -97,7 +96,7 @@ contacts.getUserProfile= function(req, res, next) {
 
 
 // contacts.updateProfilePic = function(req, res, next) {  
-  	
+
 //   knex('jcusers').where({id: req.user.id}).update({ pic:req.body.picbase64, large_pic: req.body.pic_url })
 // 	.then((values)=>{
 // 		res.json({ error: false });
@@ -108,264 +107,264 @@ contacts.getUserProfile= function(req, res, next) {
 
 // };
 
-contacts.updateProfileStatus = function(req, res, next) {
-  
+contacts.updateProfileStatus = function (req, res, next) {
+
 	knex('jcusers').where({ id: req.user.id }).update({ status: req.body.status })
-	.then(()=>{
-		res.json({ error: false });
-	})
-	.catch( err => {
-		next(err);
-	});
+		.then(() => {
+			res.json({ error: false });
+		})
+		.catch(err => {
+			next(err);
+		});
 
 };
 
 
-contacts.updateProfileName = function(req, res, next) {
-  
+contacts.updateProfileName = function (req, res, next) {
+
 	knex('jcusers').where({ id: req.user.id }).update({ name: req.body.name })
-	.then(()=>{
-		res.json({ error: false });
-	})
-	.catch( err => {
-		next(err);
-	});
+		.then(() => {
+			res.json({ error: false });
+		})
+		.catch(err => {
+			next(err);
+		});
 
 };
 
-contacts.updateProfileAddress = function(req, res, next) {
-  
+contacts.updateProfileAddress = function (req, res, next) {
+
 	knex('jcusers').where({ id: req.user.id }).update({ address: req.body.address })
-	.then(()=>{
-		res.json({ error: false });
-	})
-	.catch( err => {
-		next(err);
-	});
+		.then(() => {
+			res.json({ error: false });
+		})
+		.catch(err => {
+			next(err);
+		});
 
 };
 
 
-contacts.updateProfileDOB = function(req, res, next) {
-  
+contacts.updateProfileDOB = function (req, res, next) {
+
 	knex('jcusers').where({ id: req.user.id }).update({ name: req.body.dob })
-	.then(()=>{
-		res.json({ error: false });
-	})
-	.catch( err => {
-		next(err);
-	});
+		.then(() => {
+			res.json({ error: false });
+		})
+		.catch(err => {
+			next(err);
+		});
 
 };
 
 
-contacts.updateProfileGender = function(req, res, next) {
-  
+contacts.updateProfileGender = function (req, res, next) {
+
 	knex('jcusers').where({ id: req.user.id }).update({ name: req.body.gender })
-	.then(()=>{
-		res.json({ error: false });
-	})
-	.catch( err => {
-		next(err);
-	});
+		.then(() => {
+			res.json({ error: false });
+		})
+		.catch(err => {
+			next(err);
+		});
 
 };
 
 
-contacts.updateProfileUPI = function(req, res, next) {
-  
+contacts.updateProfileUPI = function (req, res, next) {
+
 	knex('jcusers').where({ id: req.user.id }).update({ name: req.body.upi })
-	.then(()=>{
-		res.json({ error: false });
-	})
-	.catch( err => {
-		next(err);
-	});
+		.then(() => {
+			res.json({ error: false });
+		})
+		.catch(err => {
+			next(err);
+		});
 
 };
 
 
 
-contacts.inviteUser= function(req, res, next) { 
+contacts.inviteUser = function (req, res, next) {
 
-	if(!req.body.phone){
-		let err = new Error('Invalid Data');		
-		return next(err);		
+	if (!req.body.phone) {
+		let err = new Error('Invalid Data');
+		return next(err);
 	}
 
-	knex('jcusers').where({phone: req.body.phone, active:true }).select()
-	.then(user=>{
+	knex('jcusers').where({ phone: req.body.phone, active: true }).select()
+		.then(user => {
 
-			if(user.length>0)
-					return res.json({ error:false, phone: req.body.phone, invite: 0, is_regis: true, contact: user[0] });
-			else{
+			if (user.length > 0)
+				return res.json({ error: false, phone: req.body.phone, invite: 0, is_regis: true, contact: user[0] });
+			else {
 
 
-					knex('jcusers').where({id: req.user.id }).select('phone')
-					.then( myphone =>{
+				knex('jcusers').where({ id: req.user.id }).select('phone')
+					.then(myphone => {
 
-							let bodyvar = {
-								From: 'JCCHAT',
-								To: req.body.phone,
-								TemplateName: 'JCinvitation',
-								VAR1: myphone[0].phone,
-								VAR2: 'https://bit.ly/3dBv6ul'
-							}
+						let bodyvar = {
+							From: 'JCCHAT',
+							To: req.body.phone,
+							TemplateName: 'JCinvitation',
+							VAR1: myphone[0].phone,
+							VAR2: 'https://bit.ly/3dBv6ul'
+						}
 
-							console.log('BODY VAR', bodyvar)
+						console.log('BODY VAR', bodyvar)
 
-							nodefetch( 'https://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS', 
-				  		{       
-				  				method: 'post',
-        						body: JSON.stringify(bodyvar), 					        
-						        headers: { 'cache-control': 'no-cache' },
-					    })
-					    .then(resp => resp.json())
-					    .then(json => console.log(json));
+						nodefetch('https://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS',
+							{
+								method: 'post',
+								body: JSON.stringify(bodyvar),
+								headers: { 'cache-control': 'no-cache' },
+							})
+							.then(resp => resp.json())
+							.then(json => console.log(json));
 
 					})
-					.catch(err =>{
+					.catch(err => {
 						next(err)
 					})
 
 
 
-					knex('invite')	  
-				  .insert({ user_id: req.user.id, invitee: req.body.phone  })
-				  .then( val => {	  		
+				knex('invite')
+					.insert({ user_id: req.user.id, invitee: req.body.phone })
+					.then(val => {
 
-				  		return res.json({error: false, phone: req.body.phone,  invite: 1, is_regis:false });
-				  })
-				  .catch(err=>{
-				  	return res.json({error: false, phone: req.body.phone,  invite: 0, is_regis:false });
-				  });
+						return res.json({ error: false, phone: req.body.phone, invite: 1, is_regis: false });
+					})
+					.catch(err => {
+						return res.json({ error: false, phone: req.body.phone, invite: 0, is_regis: false });
+					});
 
 			}
 
-	})
-	.catch(err=>{
-  	next(err);
-  });
-	
-
-};
-
-
-contacts.getChildren= function(req, res, next) {
-
-	knex('jcusers')
-	.where( 'id', req.user.id)
-	.select('phone')
-	.then(user => {
-
-		let p = [];
-
-		let t1 = knex('jcusers')
-		.where( 'jcusers.reference', user[0].phone )
-		.join('scores', 'jcusers.id', '=', 'scores.user_id')
-		.select('jcusers.id as id', 'jcusers.phone as phone','jcusers.name as name', 'scores.level as level')
-		.orderBy('jcusers.id', 'desc')
-		.limit(100).offset(req.body.page * 100 );
-
-		p.push(t1);
-
-		let t2 = knex('invite')
-		.where('user_id', req.user.id)
-		.count('invitee as k');
-
-		p.push(t2);
-
-		Promise.all(p)
-	    .then( values => {
-	      		console.log('invitee:' + values[1]);      	
-	          	return res.json({ error:false, children: values[0], invitees: values[1][0].k });           
-	         	
-		})      
-		  .catch(err=>{
-		  	next(err);
+		})
+		.catch(err => {
+			next(err);
 		});
 
 
-
-	})
-	.catch(err=>{
-		next(err);
-	});
-		
-
 };
 
 
+contacts.getChildren = function (req, res, next) {
 
-contacts.getLeaderboard = function(req, res, next) {
-
-	knex('scores').where({user_id: req.user.id}).select()
-	.then(scores => {
-
-			if(scores.length<=0)
-				throw new Error('Illegal Operation');	
+	knex('jcusers')
+		.where('id', req.user.id)
+		.select('phone')
+		.then(user => {
 
 			let p = [];
-							
 
-			let t2 = knex('scores').where('total_points','>',scores[0].total_points)
-								.join('jcusers','scores.user_id', '=', 'jcusers.id')
-								.orderBy('scores.total_points')
-								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.total_points as total_points')
-								.limit(5);
-			p.push(t2);									
+			let t1 = knex('jcusers')
+				.where('jcusers.reference', user[0].phone)
+				.join('scores', 'jcusers.id', '=', 'scores.user_id')
+				.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level')
+				.orderBy('jcusers.id', 'desc')
+				.limit(100).offset(req.body.page * 100);
 
-			let t3 = knex('scores').where('total_points','<',scores[0].total_points)
-								.join('jcusers','scores.user_id', '=', 'jcusers.id')
-								.orderBy('scores.total_points', 'desc')
-								.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.total_points as total_points')
-								.limit(10);
-			p.push(t3);							
+			p.push(t1);
 
-			
+			let t2 = knex('invite')
+				.where('user_id', req.user.id)
+				.count('invitee as k');
+
+			p.push(t2);
+
 			Promise.all(p)
-		    .then( values => {
+				.then(values => {
+					console.log('invitee:' + values[1]);
+					return res.json({ error: false, children: values[0], invitees: values[1][0].k });
 
-		    	return res.json({ error:false, top: values[0], down: values[1] });
-
-		      	 	
-			})      
-			  .catch(err=>{
-			  	next(err);
-			});
-
+				})
+				.catch(err => {
+					next(err);
+				});
 
 
-	})
-	.catch(err=>{
-		next(err);
-	})
+
+		})
+		.catch(err => {
+			next(err);
+		});
+
 
 };
 
 
-contacts.listAllJIDs = function(req, res, next) {
 
-	if(req.user.id !== 1){
-		let err = new Error('Improper Data');	
+contacts.getLeaderboard = function (req, res, next) {
+
+	knex('scores').where({ user_id: req.user.id }).select()
+		.then(scores => {
+
+			if (scores.length <= 0)
+				throw new Error('Illegal Operation');
+
+			let p = [];
+
+
+			let t2 = knex('scores').where('total_points', '>', scores[0].total_points)
+				.join('jcusers', 'scores.user_id', '=', 'jcusers.id')
+				.orderBy('scores.total_points')
+				.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.total_points as total_points')
+				.limit(5);
+			p.push(t2);
+
+			let t3 = knex('scores').where('total_points', '<', scores[0].total_points)
+				.join('jcusers', 'scores.user_id', '=', 'jcusers.id')
+				.orderBy('scores.total_points', 'desc')
+				.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level', 'scores.total_points as total_points')
+				.limit(10);
+			p.push(t3);
+
+
+			Promise.all(p)
+				.then(values => {
+
+					return res.json({ error: false, top: values[0], down: values[1] });
+
+
+				})
+				.catch(err => {
+					next(err);
+				});
+
+
+
+		})
+		.catch(err => {
+			next(err);
+		})
+
+};
+
+
+contacts.listAllJIDs = function (req, res, next) {
+
+	if (req.user.id !== 1) {
+		let err = new Error('Improper Data');
 		return next(err);
 	}
 
 	let page = req.body.page;
 
-	if(!page)
+	if (!page)
 		page = 0;
 
 	knex('jcusers').select('phone')
-	.limit(10).offset(page * 10 )
-	.then(jids => {		
+		.limit(10).offset(page * 10)
+		.then(jids => {
 
-		return res.json({error: false, jids })
-		
-	})
-	.catch(err=>{
-		next(err);
-	})
+			return res.json({ error: false, jids })
+
+		})
+		.catch(err => {
+			next(err);
+		})
 
 };
 
@@ -373,39 +372,39 @@ contacts.listAllJIDs = function(req, res, next) {
 let resetuser = require('../utils/resetUser');
 
 
-contacts.resetUser = function(req, res, next) {
+contacts.resetUser = function (req, res, next) {
 
-	if(req.user.id !== 1){
-		let err = new Error('Improper Data');	
+	if (req.user.id !== 1) {
+		let err = new Error('Improper Data');
 		return next(err);
 	}
 
 	let userid = req.body.userid;
 
-	if(!userid){
-		let err = new Error('Specify userid to reset');	
+	if (!userid) {
+		let err = new Error('Specify userid to reset');
 		return next(err);
 	}
 
 
-	knex('jcusers').where({id:userid}).select('id')
-	.then( (user) => {		
+	knex('jcusers').where({ id: userid }).select('id')
+		.then((user) => {
 
-			if(user.length > 0){
+			if (user.length > 0) {
 				resetuser(userid);
-				return res.json({error: false })
+				return res.json({ error: false })
 			}
-			else{
-				let err = new Error('User does not exist');	
+			else {
+				let err = new Error('User does not exist');
 				return next(err);
 			}
-																	
-		
-	})
-	.catch( err => {				
-		next(err)
-	})
-	
+
+
+		})
+		.catch(err => {
+			next(err)
+		})
+
 
 };
 
