@@ -93,11 +93,11 @@ registration.registerPhoneNumber = function (req, res, next) {
 
 						if (user[0].active) {
 
-							return res.json({ error: false, userId: user[0].id, active: true, name: user[0].name, status_msg: user[0].status, db: 'A', domain: 'jewelchat.net' });
+							return res.json({ error: false, userId: user[0].id, active: true, name: user[0].name, status_msg: user[0].status, domain: 'jewelchat.net' });
 
 						} else {
 
-							return res.json({ error: false, userId: user[0].id, active: false, name: user[0].name, status_msg: user[0].status, db: 'A', domain: 'jewelchat.net' });
+							return res.json({ error: false, userId: user[0].id, active: false, name: user[0].name, status_msg: user[0].status, domain: 'jewelchat.net' });
 						}
 
 
@@ -128,7 +128,7 @@ registration.registerPhoneNumber = function (req, res, next) {
 							.then(res => res.json())
 							.then(json => console.log(json));
 
-						return res.json({ error: false, userId: id[0], active: false, name: 'defaultJCUname', status_msg: 'Keep collecting...', db: 'A', domain: 'jewelchat.net' });
+						return res.json({ error: false, userId: id[0], active: false, name: 'defaultJCUname', status_msg: 'Keep collecting...', domain: 'jewelchat.net' });
 
 					})
 					.catch(err => {
