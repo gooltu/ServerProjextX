@@ -52,7 +52,7 @@ mongooseim.user_exists = function (req, res, next) {
 
 	res.contentType = "text/plain";
 
-	knex('jcusers').where({ phone: req.query.user }).select('id')
+	knex('jcusers').where({ id: req.query.user }).select('id')
 		.then((user) => {
 
 			if (user.length > 0)
@@ -83,7 +83,7 @@ mongooseim.check_password = function (req, res, next) {
 
 	res.contentType = "text/plain";
 
-	knex('jcusers').where({ phone: req.query.user }).select('id', 'scode')
+	knex('jcusers').where({ id: req.query.user }).select('id', 'scode')
 		.then((user) => {
 
 			if (user.length > 0) {
@@ -131,7 +131,7 @@ mongooseim.get_password = function (req, res, next) {
 
 	res.contentType = "text/plain";
 
-	knex('jcusers').where({ phone: req.query.user }).select('id', 'scode')
+	knex('jcusers').where({ id: req.query.user }).select('id', 'scode')
 		.then((user) => {
 
 			if (user.length > 0) {
