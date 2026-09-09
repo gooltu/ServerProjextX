@@ -79,13 +79,13 @@ registration.registerPhoneNumber = function (req, res, next) {
 						if (phone !== '910000000000') {
 
 							//console.log('OTP SMS')
-							let smsurl = 'https://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/' + phone + '/' + se + '/JewelChatRegistrationOTP';
+							// let smsurl = 'https://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/' + phone + '/' + se + '/JewelChatRegistrationOTP';
 
-							nodefetch(smsurl, {
-								headers: { 'cache-control': 'no-cache' }
-							})
-								.then(res => res.json())
-								.then(json => console.log(json));
+							// nodefetch(smsurl, {
+							// 	headers: { 'cache-control': 'no-cache' }
+							// })
+							// 	.then(res => res.json())
+							// 	.then(json => console.log(json));
 
 						}
 
@@ -120,13 +120,13 @@ registration.registerPhoneNumber = function (req, res, next) {
 				knex.table('jcusers').insert({ phone, vcode: se, name: 'defaultJCUname', status: 'Keep collecting...' })
 					.then(id => {
 
-						let smsurl = 'https://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/' + phone + '/' + se + '/JewelChatRegistrationOTP';
+						// let smsurl = 'https://2factor.in/API/V1/19a8cb68-fd88-11e9-9fa5-0200cd936042/SMS/' + phone + '/' + se + '/JewelChatRegistrationOTP';
 
-						nodefetch(smsurl, {
-							headers: { 'cache-control': 'no-cache' }
-						})
-							.then(res => res.json())
-							.then(json => console.log(json));
+						// nodefetch(smsurl, {
+						// 	headers: { 'cache-control': 'no-cache' }
+						// })
+						// 	.then(res => res.json())
+						// 	.then(json => console.log(json));
 
 						return res.json({ error: false, userId: id[0], active: false, name: 'defaultJCUname', status_msg: 'Keep collecting...', domain: 'jewelchat.net' });
 
