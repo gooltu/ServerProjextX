@@ -99,13 +99,13 @@ router.post('/transferJewelsFromFactory', passport.authenticate('jwt'), controll
 
 
 
-// const environment = process.env.NODE_ENV || 'development';
+const environment = process.env.NODE_ENV || 'development';
 
-// if(environment === 'development'){
+if (environment === 'development') {
 
-// 	require('./test_enabler_routes')(router, controller );
+	require('./test_enabler_routes')(router, controller);
 
-// }
+}
 
 
 

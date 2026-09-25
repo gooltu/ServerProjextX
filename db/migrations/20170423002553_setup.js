@@ -311,32 +311,36 @@ exports.up = function(knex, Promise) {
 
 }  
 
-exports.down = function(knex, Promise) {  
-  return Promise.all([
-    knex.schema.dropTableIfExists('jcusers'),
-    knex.schema.dropTableIfExists('invite'),
-    knex.schema.dropTableIfExists('scores'),
-    knex.schema.dropTableIfExists('jeweltype'),
-    knex.schema.dropTableIfExists('jewels'),
-    knex.schema.dropTableIfExists('tasks'),
-    knex.schema.dropTableIfExists('taskdetails'),
-    knex.schema.dropTableIfExists('taskusers'),
-    knex.schema.dropTableIfExists('giftrasks'),
-    knex.schema.dropTableIfExists('gifttaskdetails'),
-    knex.schema.dropTableIfExists('gifttaskusers'),
-    knex.schema.dropTableIfExists('achievements'),
-    knex.schema.dropTableIfExists('achievementusers'),
-    knex.schema.dropTableIfExists('factory'),
-    knex.schema.dropTableIfExists('factorymaterial'),
-    knex.schema.dropTableIfExists('factoryuser'),
-    knex.schema.dropTableIfExists('factorylogs'),
-    knex.schema.dropTableIfExists('wallet'),
-    knex.schema.dropTableIfExists('walletlog'),
-    knex.schema.dropTableIfExists('market'),
-    knex.schema.dropTableIfExists('diamondlog'), 
-    knex.schema.dropTableIfExists('coinlog'), 
-    knex.schema.dropTableIfExists('pointlog'),
-    knex.schema.dropTableIfExists('allgifts')
-  ])
+exports.down = function(knex, Promise) {
+  // Dropped sequentially, in reverse of creation order, so child tables
+  // (which hold the foreign keys) are gone before their parent tables.
+  return [
+    'allgifts',
+    'pointlog',
+    'coinlog',
+    'diamondlog',
+    'market',
+    'walletlog',
+    'wallet',
+    'factorylogs',
+    'factoryuser',
+    'factorymaterial',
+    'factory',
+    'achievementusers',
+    'achievements',
+    'gifttaskusers',
+    'gifttaskdetails',
+    'gifttasks',
+    'taskusers',
+    'taskdetails',
+    'tasks',
+    'jewels',
+    'jeweltype',
+    'scores',
+    'invite',
+    'jcusers'
+  ].reduce((promise, table) => {
+    return promise.then(() => knex.schema.dropTableIfExists(table));
+  }, Promise.resolve());
 };
 

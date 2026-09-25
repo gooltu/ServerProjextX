@@ -6,64 +6,64 @@ let Promise = require('bluebird');
 
 
 
-game.pickJewel = function(req, res, next) {
+game.pickJewel = function (req, res, next) {
 
 
-      let jeweltype = req.body.jeweltype;
+  let jeweltype = req.body.jeweltype;
 
-      if( !(jeweltype == 3 || jeweltype == 6 || jeweltype == 9 || jeweltype == 12 || jeweltype == 15 ))
-        throw new Error('Illegal Operation');
+  if (!(jeweltype == 3 || jeweltype == 6 || jeweltype == 9 || jeweltype == 12 || jeweltype == 15))
+    throw new Error('Illegal Operation');
 
-      
-      knex.transaction( trx => {     
-          
-          
-          
-          knex('jewels')
-          .where({ user_id : req.user.id })
-          .whereNotIn('jeweltype_id', [ 0, 1, 2 ])
-          .sum('count as sum')
-          .transacting(trx)
-          .forUpdate()          
-          .then(total => {
 
-            if(total[0].sum >= 25)
-              throw new Error('Jewel Store is full');
-            else 
-              return knex('jewels').where({user_id: req.user.id, jeweltype_id: jeweltype })
-                                   .increment('count', 1)
-                                   .increment('total_count', 1)
-                                   .transacting(trx);
+  knex.transaction(trx => {
 
-          })
-          // .then( values => {
 
-          //     for( let i=0; i<values.length; i++ ){
-          //       console.log('>>>>>>>'+values[i]);
-          //       if(values[i] == 0 ){                  
-          //         throw new Error('Transaction failed');
-          //       }
-          //     }
-          // })
-          .then(trx.commit)
-          .catch(trx.rollback)                            
 
-          
-          
+    knex('jewels')
+      .where({ user_id: req.user.id })
+      .whereNotIn('jeweltype_id', [0, 1, 2])
+      .sum('count as sum')
+      .transacting(trx)
+      .forUpdate()
+      .then(total => {
 
-      })   
-      .then( values => {
-          return res.json({ error: false, message: 'Jewel added'});
+        if (total[0].sum >= 25)
+          throw new Error('Jewel Store is full');
+        else
+          return knex('jewels').where({ user_id: req.user.id, jeweltype_id: jeweltype })
+            .increment('count', 1)
+            .increment('total_count', 1)
+            .transacting(trx);
+
       })
-      .catch( err => {
-        next(err);
-      });        
-				
+      // .then( values => {
+
+      //     for( let i=0; i<values.length; i++ ){
+      //       console.log('>>>>>>>'+values[i]);
+      //       if(values[i] == 0 ){                  
+      //         throw new Error('Transaction failed');
+      //       }
+      //     }
+      // })
+      .then(trx.commit)
+      .catch(trx.rollback)
+
+
+
+
+  })
+    .then(values => {
+      return res.json({ error: false, message: 'Jewel added' });
+    })
+    .catch(err => {
+      next(err);
+    });
+
 
 };
 
 
-game.bulkPickJewel = function(req, res, next) {
+game.bulkPickJewel = function (req, res, next) {
 
   // jewelarray = [
   //               {type:3, code:1234}, {type:6, code:2345}
@@ -73,94 +73,94 @@ game.bulkPickJewel = function(req, res, next) {
 
   console.log('Length:', jewelarray.length);
 
-  if(jewelarray.length == 0)
+  if (jewelarray.length == 0)
     throw new Error('Invalid data');
 
   knex.transaction(trx => {
 
-        knex('jewels')
-          .where({ user_id: req.user.id })
-          .whereNotIn('jeweltype_id', [0, 1, 2])
-          .sum('count as sum')
-          .transacting(trx)
-          .forUpdate()
-          .then(total => {
+    knex('jewels')
+      .where({ user_id: req.user.id })
+      .whereNotIn('jeweltype_id', [0, 1, 2])
+      .sum('count as sum')
+      .transacting(trx)
+      .forUpdate()
+      .then(total => {
 
-            if (total[0].sum >= 25)
-              throw new Error('Jewel Store is full');
+        if (total[0].sum >= 25)
+          throw new Error('Jewel Store is full');
 
-            console.log('total:', total[0].sum );
+        console.log('total:', total[0].sum);
 
-            let loop;
+        let loop;
 
-            if(jewelarray.length > (25-total[0].sum))
-              loop =  25-total[0].sum;
-            else
-                loop = jewelarray.length;
+        if (jewelarray.length > (25 - total[0].sum))
+          loop = 25 - total[0].sum;
+        else
+          loop = jewelarray.length;
 
-            console.log('loop:', loop );    
-            
-            let p = []; let q;   
+        console.log('loop:', loop);
 
-            for(let i = 0; i<loop; i++){
+        let p = []; let q;
 
-                if( jewelarray[i].type == 3 ||  jewelarray[i].type == 6 
-                  || jewelarray[i].type == 9 || jewelarray[i].type == 12 || jewelarray[i].type == 15 ){
-            
-                    q = knex('jewels').where({ user_id: req.user.id, jeweltype_id: jewelarray[i].type })
-                        .increment('count', 1)
-                        .increment('total_count', 1)
-                        .transacting(trx);
+        for (let i = 0; i < loop; i++) {
 
-                    p.push(q);  
+          if (jewelarray[i].type == 3 || jewelarray[i].type == 6
+            || jewelarray[i].type == 9 || jewelarray[i].type == 12 || jewelarray[i].type == 15) {
 
-                    console.log('type:', jewelarray[i].type )
+            q = knex('jewels').where({ user_id: req.user.id, jeweltype_id: jewelarray[i].type })
+              .increment('count', 1)
+              .increment('total_count', 1)
+              .transacting(trx);
 
-                }
-                
-            }   
-            
-            return Promise.all(p)  
+            p.push(q);
 
-          })
-          .then(values => {
+            console.log('type:', jewelarray[i].type)
 
-              for (let i = 0; i < values.length; i++) {
-                console.log('>>>>>>>' + values[i]);
-                if (values[i] == 0) {
-                  throw new Error('Transaction failed');
-                }
-              }
+          }
 
-          })
-          .then(trx.commit)
-          .catch(trx.rollback)
+        }
+
+        return Promise.all(p)
+
+      })
+      .then(values => {
+
+        for (let i = 0; i < values.length; i++) {
+          console.log('>>>>>>>' + values[i]);
+          if (values[i] == 0) {
+            throw new Error('Transaction failed');
+          }
+        }
+
+      })
+      .then(trx.commit)
+      .catch(trx.rollback)
 
   })
-  .then(values => {
-    return res.json({ error: false, message: 'Jewels added' });
-  })
-  .catch(err => {
-    next(err);
-  }); 
+    .then(values => {
+      return res.json({ error: false, message: 'Jewels added' });
+    })
+    .catch(err => {
+      next(err);
+    });
 
 
 };
 
 
 
-game.getGameState = function(req, res, next) {
-  	
-	  Promise.all([
-	  	knex('scores').where({ user_id: req.user.id }).select(),
-	  	knex('jewels').where({ user_id: req.user.id }).select()
-	  ])	
-		.then((values)=>{
-			return res.json({ error: false, scores: values[0], jewels: values[1] });
-		})
-		.catch( err => {
-			next(err);
-		});	
+game.getGameState = function (req, res, next) {
+
+  Promise.all([
+    knex('scores').where({ user_id: req.user.id }).select(),
+    knex('jewels').where({ user_id: req.user.id }).select()
+  ])
+    .then((values) => {
+      return res.json({ error: false, scores: values[0][0], jewels: values[1] });
+    })
+    .catch(err => {
+      next(err);
+    });
 
 };
 
