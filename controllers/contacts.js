@@ -252,39 +252,29 @@ contacts.inviteUser = function (req, res, next) {
 
 contacts.getChildren = function (req, res, next) {
 
+	let page = 0;
+
+	if (req.body.page && req.body.page >= 0) {
+		page = req.body.page;
+	}
+
 	knex('jcusers')
 		.where('id', req.user.id)
 		.select('phone')
 		.then(user => {
 
-			let p = [];
-
-			let t1 = knex('jcusers')
+			knex('jcusers')
 				.where('jcusers.reference', user[0].phone)
 				.join('scores', 'jcusers.id', '=', 'scores.user_id')
 				.select('jcusers.id as id', 'jcusers.phone as phone', 'jcusers.name as name', 'scores.level as level')
 				.orderBy('jcusers.id', 'desc')
-				.limit(100).offset(req.body.page * 100);
-
-			p.push(t1);
-
-			let t2 = knex('invite')
-				.where('user_id', req.user.id)
-				.count('invitee as k');
-
-			p.push(t2);
-
-			Promise.all(p)
-				.then(values => {
-					console.log('invitee:' + values[1]);
-					return res.json({ error: false, children: values[0], invitees: values[1][0].k });
-
+				.limit(100).offset(page * 100)
+				.then(children => {
+					return res.json({ error: false, children: children });
 				})
 				.catch(err => {
 					next(err);
 				});
-
-
 
 		})
 		.catch(err => {

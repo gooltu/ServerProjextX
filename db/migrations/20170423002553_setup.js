@@ -311,7 +311,7 @@ exports.up = function(knex, Promise) {
 
 }  
 
-exports.down = function(knex, Promise) {
+exports.down = function(knex) {
   // Dropped sequentially, in reverse of creation order, so child tables
   // (which hold the foreign keys) are gone before their parent tables.
   return [
