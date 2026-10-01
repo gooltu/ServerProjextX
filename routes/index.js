@@ -64,6 +64,10 @@ router.get('/listAllGifts', passport.authenticate('jwt'), controller.wallet.list
 router.get('/listAllGiftsUser', passport.authenticate('jwt'), controller.wallet.listAllGiftsUser);
 router.get('/updateGiftStatus', passport.authenticate('jwt'), controller.wallet.updateGiftStatus);
 
+// S3 presigned URL uploads/downloads
+router.post('/getUploadUrl', passport.authenticate('jwt'), controller.uploads.getUploadUrl);
+router.post('/getDownloadUrl', passport.authenticate('jwt'), controller.uploads.getDownloadUrl);
+
 
 router.post('/getAchievements', passport.authenticate('jwt'), controller.achievements.getAchievements);
 router.post('/getUsersAchievement', passport.authenticate('jwt'), controller.achievements.getUsersAchievement);

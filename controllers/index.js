@@ -11,6 +11,7 @@ var controllers = module.exports = {
   achievements : require('./achievements'),
   factory : require('./factory'),
   wallet :  require('./wallet'),
-  market :  require('./market')
+  market :  require('./market'),
+  uploads : require('./uploads')
 
 };
