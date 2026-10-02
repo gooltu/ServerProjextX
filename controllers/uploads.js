@@ -17,6 +17,11 @@ let s3 = new AWS.S3({
 const BUCKET = 'jewelchat-uploads-prod';
 const EXPIRES_SECONDS = 300;
 const CONTENT_TYPE_RE = /^(image|video)\/[\w.+-]+$/;
+const IMAGE_CONTENT_TYPE_RE = /^image\/[\w.+-]+$/;
+
+function profilePicKey(userId) {
+	return `uploads/${userId}/profile`;
+}
 
 let uploads = module.exports;
 
@@ -48,11 +53,18 @@ uploads.getUploadUrl = function (req, res, next) {
 		ContentType: contentType,
 		Expires: EXPIRES_SECONDS
 	})
-	.then(uploadUrl => res.json({ error: false, uploadUrl, key }))
-	.catch(err => next(err));
+		.then(uploadUrl => res.json({ error: false, uploadUrl, key }))
+		.catch(err => next(err));
 
 };
 
+// No ownership check: chat attachments are uploaded by the sender but need
+// to be fetched by the recipient, and this DB has no messages/conversation
+// table to verify "is req.user actually a participant here" — delivery
+// happens over the separate MongooseIM/XMPP layer, invisible to this API.
+// Any authenticated user who knows the exact (unguessable, UUID-bearing)
+// key can get a download URL for it — same trust model as the profile pic
+// download endpoint.
 uploads.getDownloadUrl = function (req, res, next) {
 
 	let key = req.body.key;
@@ -61,11 +73,48 @@ uploads.getDownloadUrl = function (req, res, next) {
 		return next(new Error('Invalid Data: key is required'));
 	}
 
-	if (!key.startsWith(`uploads/${req.user.id}/`)) {
-		let err = new Error('Forbidden: key does not belong to this user');
-		err.status = 403;
-		return next(err);
+	s3.getSignedUrlPromise('getObject', { Bucket: BUCKET, Key: key, Expires: EXPIRES_SECONDS })
+		.then(downloadUrl => res.json({ error: false, downloadUrl }))
+		.catch(err => next(err));
+
+};
+
+// Profile pic uses a fixed, deterministic key per user (no UUID) — there's
+// only ever one canonical profile pic per user, so the key never needs to
+// be stored anywhere; each new upload simply overwrites the previous one.
+uploads.getProfilePicUploadUrl = function (req, res, next) {
+
+	let contentType = req.body.contentType;
+
+	if (!contentType || typeof contentType !== 'string' || !IMAGE_CONTENT_TYPE_RE.test(contentType)) {
+		return next(new Error('Invalid Data: contentType must be image/*'));
 	}
+
+	let key = profilePicKey(req.user.id);
+
+	s3.getSignedUrlPromise('putObject', {
+		Bucket: BUCKET,
+		Key: key,
+		ContentType: contentType,
+		Expires: EXPIRES_SECONDS
+	})
+		.then(uploadUrl => res.json({ error: false, uploadUrl, key }))
+		.catch(err => next(err));
+
+};
+
+// Profile pics are visible to any authenticated user (contacts/leaderboard
+// display them), so unlike getDownloadUrl there is no ownership check —
+// any logged-in user can request any user's profile pic URL.
+uploads.getProfilePicDownloadUrl = function (req, res, next) {
+
+	let userId = req.body.userId !== undefined && req.body.userId !== null ? req.body.userId : req.user.id;
+
+	if (!Number.isInteger(Number(userId)) || Number(userId) <= 0) {
+		return next(new Error('Invalid Data: userId must be a positive integer'));
+	}
+
+	let key = profilePicKey(userId);
 
 	s3.getSignedUrlPromise('getObject', { Bucket: BUCKET, Key: key, Expires: EXPIRES_SECONDS })
 		.then(downloadUrl => res.json({ error: false, downloadUrl }))
