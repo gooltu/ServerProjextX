@@ -200,7 +200,10 @@ mongooseim.pushnotificationv3 = function (req, res, next) {
 
 
 				if (environment !== 'development') {
-					return admin.messaging().sendToDevice(req.params.deviceid, message)
+					//return admin.messaging().sendToDevice(req.params.deviceid, message)
+					console.log('send to device:' + req.params.deviceid);
+					console.log('message:' + message);
+					return
 				} else
 					return
 
