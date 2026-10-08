@@ -433,37 +433,33 @@ tasksgame.getNewTaskOnTaskCompletion = function (req, res, next) {
                 if (sum_points > 100) {
                   console.log('FIRST');
                   let bombtime = new Date();
-                  bombtime.setTime(bombtime.getTime() + 5 * 60 * 1000);
+                  bombtime.setTime(bombtime.getTime() + 2 * 60 * 1000);
 
-                  let bombtaskid1 = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
-                  let bombtaskid2 = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
-                  let bombtaskid3 = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
-                  let bombtaskid4 = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
-                  let bombtaskid5 = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
+                  let bombtaskid1 = 112;
 
-                  return knex('taskusers').insert([
-                    { user_id: req.user.id, task_id: bombtaskid1, is_bomb: 1, bomb_status: 0, completed_at: bombtime },
-                    { user_id: req.user.id, task_id: bombtaskid2, is_bomb: 1, bomb_status: 0, completed_at: bombtime },
-                    { user_id: req.user.id, task_id: bombtaskid3, is_bomb: 1, bomb_status: 0, completed_at: bombtime },
-                    { user_id: req.user.id, task_id: bombtaskid4, is_bomb: 1, bomb_status: 0, completed_at: bombtime },
-                    { user_id: req.user.id, task_id: bombtaskid5, is_bomb: 1, bomb_status: 0, completed_at: bombtime }]
-                  );
+                  return knex('taskusers').insert({ user_id: req.user.id, task_id: bombtaskid1, is_bomb: 1, bomb_status: 0, completed_at: bombtime });
 
                 } else if (probablity_bomb <= 3) {
                   //bomb
                   console.log('BOMB');
                   let bombtime = new Date();
-                  let bombtaskid = Math.floor(Math.random() * (100 - 51 + 1)) + 51;
+                  let bombtaskid;
+                  if (score_level <= 5)
+                    bombtaskid = 149;
+                  else
+                    bombtaskid = Math.floor(Math.random() * (150 - 101 + 1)) + 101;
+
                   bombtime.setTime(bombtime.getTime() + 5 * 60 * 1000);
                   return knex('taskusers').insert({ user_id: req.user.id, task_id: bombtaskid, is_bomb: 1, bomb_status: 0, completed_at: bombtime });
+
                 } else {
                   //normal task
                   console.log('Normal Task Level', score_level);
                   let taskid;
-                  if (score_level <= 2)
-                    taskid = Math.floor(Math.random() * (50 - 1 + 1)) + 1;
+                  if (score_level <= 5)
+                    taskid = Math.floor(Math.random() * (10 - 1 + 1)) + 1;
                   else
-                    taskid = Math.floor(Math.random() * (200 - 101 + 1)) + 101;
+                    taskid = Math.floor(Math.random() * (100 - 1 + 1)) + 1;
 
                   return knex('taskusers').insert({ user_id: req.user.id, task_id: taskid, is_bomb: 0, bomb_status: -1 });
                 }

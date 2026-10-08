@@ -16,7 +16,7 @@ let s3 = new AWS.S3({
 
 const BUCKET = 'jewelchat-uploads-prod';
 const EXPIRES_SECONDS = 300;
-const CONTENT_TYPE_RE = /^(image|video)\/[\w.+-]+$/;
+const CONTENT_TYPE_RE = /^(image|video|audio)\/[\w.+-]+$/;
 const IMAGE_CONTENT_TYPE_RE = /^image\/[\w.+-]+$/;
 
 function profilePicKey(userId) {
@@ -42,7 +42,7 @@ uploads.getUploadUrl = function (req, res, next) {
 	}
 
 	if (!contentType || typeof contentType !== 'string' || !CONTENT_TYPE_RE.test(contentType)) {
-		return next(new Error('Invalid Data: contentType must be image/* or video/*'));
+		return next(new Error('Invalid Data: contentType must be image/*, video/*, or audio/*'));
 	}
 
 	let key = `uploads/${req.user.id}/${crypto.randomUUID()}-${sanitizeFilename(filename)}`;

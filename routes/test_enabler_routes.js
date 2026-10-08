@@ -8,7 +8,7 @@ let knex = require('../db/knex');
 module.exports = function (router, controller) {
 
 
-  router.get('/xyz', passport.authenticate('jwt'), function (req, res, next) {
+  router.get('/xyz', function (req, res, next) {
     //console.log('OMG:::'+req.session.id);		
     console.log(req.user);
     return res.json({ message: 'new test and dev route', user: req.user });
@@ -111,16 +111,15 @@ module.exports = function (router, controller) {
     let tasks = [], taskdetails = [];
 
 
-    let jj = getJewelProbablityArray([3, 6, 9, 4, 12, 15])  // Visual MARKER
+    //let jj = getJewelProbablityArray([3, 6, 9, 4, 12, 15])  // Visual MARKER
 
-    //let jj = getJewelProbablityArray([4,5,7,8,10,11,13,14,16,17])  // Visual MARKER
+    //let jj = getJewelProbablityArray([4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 15, 12, 9, 6, 3])  // Visual MARKER
 
-
-    //let jj = getJewelProbablityArray([11, 14, 17])  // Visual MARKER
-
+    let jj = getJewelProbablityArray([11, 14, 17, 16, 13])  // Visual MARKER
 
 
-    for (let k = 1; k <= 100; k++) {  // Visual MARKER
+
+    for (let k = 101; k <= 150; k++) {  // Visual MARKER
 
       //console.log('First loop START');
 
