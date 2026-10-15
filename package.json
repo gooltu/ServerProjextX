@@ -3,10 +3,13 @@
   "version": "0.0.1",
   "private": true,
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "test": "NODE_ENV=test jest --runInBand",
+    "test:db:up": "docker-compose -f docker-compose.test.yml up -d",
+    "test:db:down": "docker-compose -f docker-compose.test.yml down -v"
   },
   "dependencies": {
     "aws-sdk": "2.1014.0",
@@ -24,5 +27,9 @@
     "passport-jwt": "4.0.0",
     "speakeasy": "2.0.0",
     "weeknumber": "1.1.2"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "supertest": "^7.3.1"
   }
 }

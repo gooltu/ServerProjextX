@@ -6,6 +6,8 @@ let config;
 
 if (environment === 'production')
 	config = require('../knexfile_production.js')[environment];
+else if (environment === 'test')
+	config = require('../knexfile_test.js')[environment];
 else
 	config = require('../knexfile_development.js')[environment];
 

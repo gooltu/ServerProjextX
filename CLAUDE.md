@@ -71,6 +71,14 @@ Firebase service account, MySQL) come from environment variables — see `.env.e
 full documented list. `.env` itself is gitignored; never hardcode secrets into tracked files
 (`knexfile_production.js` is the pattern to follow — it reads from `process.env`).
 
+**Production secrets are not hand-maintained.** The live deployment (EC2/ASG, see the sibling
+`ChatServerConf` repo) populates `.env` at instance boot from two AWS Secrets Manager secrets —
+`serverprojectx/db-credentials` (`dusername`/`dpassword`) and `serverprojectx/app-secrets`
+(everything else in `.env.example` below the database section, flattened in verbatim) — via
+`ChatServerConf/infra/app/userdata/nodeapp.sh.tpl`. `.env.example` here is the source of truth
+for what that second secret's JSON blob needs to contain; keep them in sync when adding or
+removing a config value.
+
 **Process lifecycle**: `bin/www` calls `process.exit(99)` on any `uncaughtException` — this is
 intentional, paired with Docker's `restart: unless-stopped` policy to self-heal crashed containers.
 It only handles `SIGINT`, not `SIGTERM`, so `docker stop`/`docker compose down` will wait out the

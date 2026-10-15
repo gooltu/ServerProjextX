@@ -6,21 +6,9 @@ let config = module.exports;
 
 config.env = process.env.NODE_ENV || 'development';
 
-config.topicname = process.env.topicname || ''; 
 config.subc_name = process.env.NODE_ENV || '';
 
+config.secret = process.env.JWT_SECRET || 'ilovescotchscotchyscotchscotch';
 
-
-config.host = process.env.host || 'localhost';
-config.user = process.env.user || 'root';
-config.password = process.env.password || '';
-
-
-
-config.memcached = process.env.memcached || 'localhost';
-
-config.gcmkey = process.env.gcmkey || '';
-
-config.secret = 'ilovescotchscotchyscotchscotch';
-
+config.appCheckEnabled = process.env.APP_CHECK_ENABLED === 'true';
 

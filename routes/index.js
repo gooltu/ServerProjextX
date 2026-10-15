@@ -4,6 +4,7 @@ var router = express.Router();
 var passport = require('passport');
 
 var passportUtils = require('../utils/passport');
+var requireAppCheck = require('../utils/appCheck');
 
 var controller = require('../controllers');
 
@@ -22,9 +23,9 @@ router.get('/getGameServerTime', function (req, res, next) {
 });
 
 
-router.post('/registerPhoneNumber', controller.registration.registerPhoneNumber);
-router.post('/verifyCode', controller.registration.verifyCode);
-router.post('/getAccessToken', controller.registration.getAccessToken);
+router.post('/registerPhoneNumber', requireAppCheck, controller.registration.registerPhoneNumber);
+router.post('/verifyCode', requireAppCheck, controller.registration.verifyCode);
+router.post('/getAccessToken', requireAppCheck, controller.registration.getAccessToken);
 router.post('/initialDetails', passport.authenticate('jwt'), controller.registration.initialDetails);
 router.post('/resendVcode', controller.registration.resendVcode);
 router.get('/awsToken', passport.authenticate('jwt'), controller.registration.awsToken);
@@ -93,7 +94,10 @@ router.get('/getNewTaskOnTaskCompletion', passport.authenticate('jwt'), controll
 
 router.post('/pickJewel', passport.authenticate('jwt'), controller.game.pickJewel);
 router.post('/bulkPickJewel', passport.authenticate('jwt'), controller.game.bulkPickJewel);
+router.post('/bulkPickJewelVerified', passport.authenticate('jwt'), controller.game.bulkPickJewelVerified);
 router.get('/getGameState', passport.authenticate('jwt'), controller.game.getGameState);
+router.get('/getJewels', passport.authenticate('jwt'), controller.game.getJewels);
+router.post('/checkJewelCode', passport.authenticate('jwt'), controller.game.checkJewelCode);
 
 router.get('/getFactories', passport.authenticate('jwt'), controller.factory.getFactories);
 router.post('/getUserFactory', passport.authenticate('jwt'), controller.factory.getUserFactory);

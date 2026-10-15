@@ -1,0 +1,11 @@
+services:
+  mysql-test:
+    image: mysql:8.0
+    restart: "no"
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: gameserver_test
+    ports:
+      - "13307:3306"
+    tmpfs:
+      - /var/lib/mysql
