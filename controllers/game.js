@@ -9,6 +9,7 @@ let config = require('../utils/config');
 
 const JEWEL_TYPES = [3, 6, 9, 12, 15];
 const LOT_SIZE = 25;
+const VALID_JEWEL_TYPES = new Set(JEWEL_TYPES);
 
 
 game.getJewels = function (req, res, next) {
@@ -107,88 +108,76 @@ game.pickJewel = function (req, res, next) {
 };
 
 
-game.bulkPickJewel = function (req, res, next) {
-
-  // jewelarray = [
-  //               {type:3, code:1234}, {type:6, code:2345}
-  //               ]
-
-  let jewelarray = req.body.jewelarray;
-
-  console.log('Length:', jewelarray.length);
-
-  if (jewelarray.length == 0)
-    throw new Error('Invalid data');
-
-  knex.transaction(trx => {
-
-    knex('jewels')
-      .where({ user_id: req.user.id })
+async function applyBulkJewels(userId, jewelarray) {
+  await knex.transaction(async trx => {
+    const total = await trx('jewels')
+      .where({ user_id: userId })
       .whereNotIn('jeweltype_id', [0, 1, 2])
       .sum('count as sum')
-      .transacting(trx)
-      .forUpdate()
-      .then(total => {
+      .forUpdate();
 
-        if (total[0].sum >= 25)
-          throw new Error('Jewel Store is full');
+    const currentSum = Number(total[0]?.sum || 0);
+    if (currentSum >= LOT_SIZE) {
+      throw new Error('Jewel Store is full');
+    }
 
-        console.log('total:', total[0].sum);
+    let availableSlots = LOT_SIZE - currentSum;
+    const countsByType = {};
 
-        let loop;
+    for (let i = 0; i < jewelarray.length; i++) {
+      if (availableSlots <= 0) {
+        break;
+      }
 
-        if (jewelarray.length > (25 - total[0].sum))
-          loop = 25 - total[0].sum;
-        else
-          loop = jewelarray.length;
+      const type = jewelarray[i]?.type;
+      if (VALID_JEWEL_TYPES.has(type)) {
+        countsByType[type] = (countsByType[type] || 0) + 1;
+        availableSlots--;
+      }
+    }
 
-        console.log('loop:', loop);
+    const typesToUpdate = Object.keys(countsByType).map(Number);
+    if (typesToUpdate.length === 0) {
+      return;
+    }
 
-        let p = []; let q;
+    let caseSql = 'CASE jeweltype_id ';
+    const bindings = [];
+    for (const type of typesToUpdate) {
+      caseSql += 'WHEN ? THEN ? ';
+      bindings.push(type, countsByType[type]);
+    }
+    caseSql += 'ELSE 0 END';
 
-        for (let i = 0; i < loop; i++) {
+    const updatedRows = await trx('jewels')
+      .where({ user_id: userId })
+      .whereIn('jeweltype_id', typesToUpdate)
+      .update({
+        count: trx.raw(`count + ${caseSql}`, bindings),
+        total_count: trx.raw(`total_count + ${caseSql}`, bindings)
+      });
 
-          if (jewelarray[i].type == 3 || jewelarray[i].type == 6
-            || jewelarray[i].type == 9 || jewelarray[i].type == 12 || jewelarray[i].type == 15) {
-
-            q = knex('jewels').where({ user_id: req.user.id, jeweltype_id: jewelarray[i].type })
-              .increment('count', 1)
-              .increment('total_count', 1)
-              .transacting(trx);
-
-            p.push(q);
-
-            console.log('type:', jewelarray[i].type)
-
-          }
-
-        }
-
-        return Promise.all(p)
-
-      })
-      .then(values => {
-
-        for (let i = 0; i < values.length; i++) {
-          console.log('>>>>>>>' + values[i]);
-          if (values[i] == 0) {
-            throw new Error('Transaction failed');
-          }
-        }
-
-      })
-      .then(trx.commit)
-      .catch(trx.rollback)
-
-  })
-    .then(values => {
-      return res.json({ error: false, message: 'Jewels added' });
-    })
-    .catch(err => {
-      next(err);
-    });
+    if (updatedRows === 0) {
+      throw new Error('Transaction failed');
+    }
+  });
+}
 
 
+game.bulkPickJewel = async function (req, res, next) {
+  try {
+    let jewelarray = req.body.jewelarray;
+
+    if (!Array.isArray(jewelarray) || jewelarray.length === 0) {
+      throw new Error('Invalid data');
+    }
+
+    await applyBulkJewels(req.user.id, jewelarray);
+
+    return res.json({ error: false, message: 'Jewels added' });
+  } catch (err) {
+    next(err);
+  }
 };
 
 
@@ -201,85 +190,26 @@ function verifyCodeForUser(code, userId) {
 }
 
 
-game.bulkPickJewelVerified = function (req, res, next) {
+game.bulkPickJewelVerified = async function (req, res, next) {
+  try {
+    let jewelarray = req.body.jewelarray;
 
-  // jewelarray = [
-  //               {type:3, code:"<jwt from getJewels>"}, {type:6, code:"<jwt from getJewels>"}
-  //               ]
+    if (!Array.isArray(jewelarray) || jewelarray.length === 0) {
+      throw new Error('Invalid data');
+    }
 
-  let jewelarray = req.body.jewelarray;
+    // All-or-nothing: verify every item's code is genuinely this backend's and bound to this
+    // user before touching the database.
+    for (let i = 0; i < jewelarray.length; i++) {
+      verifyCodeForUser(jewelarray[i].code, req.user.id);
+    }
 
-  if (jewelarray.length == 0)
-    throw new Error('Invalid data');
+    await applyBulkJewels(req.user.id, jewelarray);
 
-  // All-or-nothing: verify every item's code is genuinely this backend's and bound to this
-  // user before touching the database.
-  for (let i = 0; i < jewelarray.length; i++) {
-    verifyCodeForUser(jewelarray[i].code, req.user.id);
+    return res.json({ error: false, message: 'Jewels added' });
+  } catch (err) {
+    next(err);
   }
-
-  knex.transaction(trx => {
-
-    knex('jewels')
-      .where({ user_id: req.user.id })
-      .whereNotIn('jeweltype_id', [0, 1, 2])
-      .sum('count as sum')
-      .transacting(trx)
-      .forUpdate()
-      .then(total => {
-
-        if (total[0].sum >= 25)
-          throw new Error('Jewel Store is full');
-
-        let loop;
-
-        if (jewelarray.length > (25 - total[0].sum))
-          loop = 25 - total[0].sum;
-        else
-          loop = jewelarray.length;
-
-        let p = []; let q;
-
-        for (let i = 0; i < loop; i++) {
-
-          if (jewelarray[i].type == 3 || jewelarray[i].type == 6
-            || jewelarray[i].type == 9 || jewelarray[i].type == 12 || jewelarray[i].type == 15) {
-
-            q = knex('jewels').where({ user_id: req.user.id, jeweltype_id: jewelarray[i].type })
-              .increment('count', 1)
-              .increment('total_count', 1)
-              .transacting(trx);
-
-            p.push(q);
-
-          }
-
-        }
-
-        return Promise.all(p)
-
-      })
-      .then(values => {
-
-        for (let i = 0; i < values.length; i++) {
-          if (values[i] == 0) {
-            throw new Error('Transaction failed');
-          }
-        }
-
-      })
-      .then(trx.commit)
-      .catch(trx.rollback)
-
-  })
-    .then(values => {
-      return res.json({ error: false, message: 'Jewels added' });
-    })
-    .catch(err => {
-      next(err);
-    });
-
-
 };
 
 
