@@ -14,4 +14,9 @@ function mintRefreshToken(userId, scode) {
   return jwt.sign({ id: userId, scode }, config.secret, { noTimestamp: true });
 }
 
-module.exports = { mintAccessToken, mintRefreshToken };
+// Matches the admin token shape issued by controllers/admin.js's login.
+function mintAdminToken(adminId, options = {}) {
+  return jwt.sign({ id: adminId }, config.adminSecret, { audience: 'admin', expiresIn: '8h', ...options });
+}
+
+module.exports = { mintAccessToken, mintRefreshToken, mintAdminToken };

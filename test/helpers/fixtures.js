@@ -1,5 +1,6 @@
 'use strict';
 
+const bcrypt = require('bcryptjs');
 const { knex } = require('./db');
 
 let nextPhone = 919000000001;
@@ -92,7 +93,26 @@ async function backdateTaskUserCreatedAt(taskUserId, secondsAgo) {
     .update({ created_at: knex.raw('NOW() - INTERVAL ? SECOND', [secondsAgo]) });
 }
 
+// Low bcrypt cost keeps login tests fast; the real hash cost lives in scripts/createAdmin.js.
+async function createAdmin(overrides = {}) {
+  const password = overrides.password !== undefined ? overrides.password : 'correct horse battery';
+  const row = {
+    email: overrides.email !== undefined ? overrides.email : 'admin@example.com',
+    name: overrides.name !== undefined ? overrides.name : 'Test Admin',
+    active: overrides.active !== undefined ? overrides.active : true,
+    password_hash: bcrypt.hashSync(password, 4)
+  };
+  const [id] = await knex('admins').insert(row);
+  return { ...row, id, password };
+}
+
+async function setFutureTasks(userId, tasks) {
+  await knex('futuretasks').insert({ user_id: userId, tasks: JSON.stringify(tasks) });
+}
+
 module.exports = {
+  createAdmin,
+  setFutureTasks,
   createTestUser,
   createScores,
   createJewels,
