@@ -63,9 +63,24 @@ async function findMissingTaskIds(entries) {
   return ids.filter(id => !found.includes(id));
 }
 
+// Thrown inside writeQueue's transaction to roll back and answer with `status`.
+class QueueRejected extends Error {
+  constructor(status, message, tasks) {
+    super(message);
+    this.status = status;
+    this.tasks = tasks;
+  }
+}
+
+// MySQL's JSON type reorders object keys, so queues are compared by value, not by JSON text.
+function sameQueue(a, b) {
+  let key = e => `${e.task_id}:${e.is_bomb}:${e.bomb_minutes || ''}`;
+  return a.length === b.length && a.every((e, i) => key(e) === key(b[i]));
+}
+
 // Locks the user's futuretasks row (creating it if needed), applies buildQueue to the current
-// queue, and writes the result plus an adminlogs row in one transaction. Returns the new queue,
-// or null if it would exceed MAX_QUEUE_LENGTH.
+// queue, and writes the result plus an adminlogs row in one transaction. buildQueue may throw
+// QueueRejected to abort. Returns the new queue.
 function writeQueue(adminId, userId, action, buildQueue) {
   return knex.transaction(async trx => {
     await trx('futuretasks').insert({ user_id: userId }).onConflict('user_id').ignore();
@@ -74,7 +89,7 @@ function writeQueue(adminId, userId, action, buildQueue) {
     let before = row.tasks;
     let after = buildQueue(before);
     if (after.length > MAX_QUEUE_LENGTH)
-      return null;
+      throw new QueueRejected(400, `Queue cannot exceed ${MAX_QUEUE_LENGTH} entries`);
 
     await trx('futuretasks').where({ id: row.id }).update({ tasks: JSON.stringify(after) });
     await trx('adminlogs').insert({
@@ -96,6 +111,16 @@ async function handleQueueWrite(req, res, action, buildQueue) {
   if (message)
     return badRequest(res, message);
 
+  // Optional optimistic-concurrency check: the queue the client's edit was based on. The game
+  // pops entries as the player plays, so a stale full-queue replace could resurrect them.
+  let expected = null;
+  if (req.body.expected !== undefined) {
+    let parsed = normalizeEntries(req.body.expected);
+    if (parsed.message)
+      return badRequest(res, parsed.message.replace(/^entries/, 'expected'));
+    expected = parsed.entries;
+  }
+
   let missing = await findMissingTaskIds(entries);
   if (missing.length > 0)
     return badRequest(res, `Unknown task_id: ${missing.join(', ')}`);
@@ -105,11 +130,18 @@ async function handleQueueWrite(req, res, action, buildQueue) {
   if (!user)
     return res.status(404).json({ error: true, message: 'User not found' });
 
-  let tasks = await writeQueue(req.user.id, userId, action, current => buildQueue(current, entries));
-  if (!tasks)
-    return badRequest(res, `Queue cannot exceed ${MAX_QUEUE_LENGTH} entries`);
-
-  return res.json({ error: false, tasks });
+  try {
+    let tasks = await writeQueue(req.user.id, userId, action, current => {
+      if (expected && !sameQueue(current, expected))
+        throw new QueueRejected(409, 'Queue changed since it was loaded', current);
+      return buildQueue(current, entries);
+    });
+    return res.json({ error: false, tasks });
+  } catch (err) {
+    if (!(err instanceof QueueRejected))
+      throw err;
+    return res.status(err.status).json({ error: true, message: err.message, tasks: err.tasks });
+  }
 }
 
 

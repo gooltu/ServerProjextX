@@ -215,6 +215,33 @@ describe('admin.js', () => {
       expect((await knex('futuretasks').where({ user_id: user.id }).first()).tasks).toEqual([{ task_id: 5, is_bomb: false }]);
     });
 
+    test('replace with a stale expected queue is rejected with the current queue', async () => {
+      const { token } = await authedAdmin();
+      const user = await createTestUser();
+      // Loaded as [120, 5], but the player has since consumed the bomb.
+      await setFutureTasks(user.id, [{ task_id: 5, is_bomb: false }]);
+
+      const res = await request().put(`/admin/users/${user.id}/futuretasks`).set('Authorization', `Bearer ${token}`)
+        .send({
+          expected: [{ task_id: 120, is_bomb: true, bomb_minutes: 2 }, { task_id: 5, is_bomb: false }],
+          entries: [{ task_id: 120, is_bomb: true, bomb_minutes: 2 }]
+        });
+      expect(res.status).toBe(409);
+      expect(res.body.tasks).toEqual([{ task_id: 5, is_bomb: false }]);
+      expect((await knex('futuretasks').where({ user_id: user.id }).first()).tasks).toEqual([{ task_id: 5, is_bomb: false }]);
+    });
+
+    test('replace with a matching expected queue succeeds', async () => {
+      const { token } = await authedAdmin();
+      const user = await createTestUser();
+      await setFutureTasks(user.id, [{ task_id: 120, is_bomb: true, bomb_minutes: 2 }]);
+
+      const res = await request().put(`/admin/users/${user.id}/futuretasks`).set('Authorization', `Bearer ${token}`)
+        .send({ expected: [{ is_bomb: true, bomb_minutes: 2, task_id: 120 }], entries: [] });
+      expect(res.status).toBe(200);
+      expect(res.body.tasks).toEqual([]);
+    });
+
     test('rejects invalid entries without touching the queue', async () => {
       const { token } = await authedAdmin();
       const user = await createTestUser();
