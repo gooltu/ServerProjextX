@@ -12,6 +12,7 @@ var controllers = module.exports = {
   factory : require('./factory'),
   wallet :  require('./wallet'),
   market :  require('./market'),
-  uploads : require('./uploads')
+  uploads : require('./uploads'),
+  admin : require('./admin')
 
 };

@@ -10,9 +10,12 @@ var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var routes_mongooseim = require('./routes/mongooseim')
+var routes_admin = require('./routes/admin');
 
 var app = express();
 app.disable('x-powered-by');
+// Behind a single ALB hop - lets req.ip (used by the admin login rate limiter) see the client.
+app.set('trust proxy', 1);
 
 
 
@@ -26,6 +29,7 @@ app.use(passport.session());
 
 app.use('/', routes);
 app.use('/mongooseim/', routes_mongooseim);
+app.use('/admin/', routes_admin);
 
 var passportUtil = require('./utils/passport');
 
@@ -34,6 +38,16 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = require('./utils/config').secret;
 
 passport.use(new JwtStrategy(opts, passportUtil.verifyPayload));
+
+var adminSecret = require('./utils/config').adminSecret;
+
+if (adminSecret) {
+  passport.use('admin-jwt', new JwtStrategy({
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: adminSecret,
+    audience: 'admin'
+  }, passportUtil.verifyAdminPayload));
+}
 
 passport.serializeUser(passportUtil.serializeUser);
 passport.deserializeUser(passportUtil.deserializeUser);
