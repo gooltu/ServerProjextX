@@ -7,7 +7,8 @@ const {
   createScores,
   createJewels,
   createTaskUserRow,
-  backdateTaskUserCreatedAt
+  backdateTaskUserCreatedAt,
+  setFutureTasks
 } = require('./helpers/fixtures');
 const { mintAccessToken } = require('./helpers/auth');
 const { pollUntil } = require('./helpers/poll');
@@ -373,6 +374,102 @@ describe('tasksgame.js', () => {
         return r || null;
       });
       expect(row.bomb_status).toBe(-1);
+    });
+
+    // completed_at is written from a JS Date and read back as a local-time string
+    // (dateStrings: true), so parse it back as local time before comparing.
+    function secondsUntil(dateString, from) {
+      return (new Date(dateString.replace(' ', 'T')).getTime() - from) / 1000;
+    }
+
+    test('queued bomb is popped before the random generator, with its own timer', async () => {
+      const { user, token } = await authedUser();
+      await createScores(user.id, { level: 1 });
+      // Would otherwise trigger the >100xp auto-bomb (task 112).
+      await createTaskUserRow(user.id, 148, { done: true, completed_at: new Date() });
+      await setFutureTasks(user.id, [
+        { task_id: 120, is_bomb: true, bomb_minutes: 3 },
+        { task_id: 7, is_bomb: false }
+      ]);
+
+      const before = Date.now();
+      await request().get('/getNewTaskOnTaskCompletion').set('Authorization', `Bearer ${token}`);
+
+      const row = await pollUntil(async () => {
+        const r = await knex('taskusers').where({ user_id: user.id, task_id: 120 }).first();
+        return r || null;
+      });
+      expect(row.is_bomb).toBe(1);
+      expect(row.bomb_status).toBe(0);
+      expect(secondsUntil(row.completed_at, before)).toBeGreaterThan(170);
+      expect(secondsUntil(row.completed_at, before)).toBeLessThan(190);
+
+      const queue = await knex('futuretasks').where({ user_id: user.id }).first();
+      expect(queue.tasks).toEqual([{ task_id: 7, is_bomb: false }]);
+      expect(await knex('taskusers').where({ user_id: user.id, task_id: 112 })).toHaveLength(0);
+    });
+
+    test('queued bomb without bomb_minutes defaults to 5 minutes', async () => {
+      const { user, token } = await authedUser();
+      await createScores(user.id, { level: 1 });
+      await setFutureTasks(user.id, [{ task_id: 130, is_bomb: true }]);
+
+      const before = Date.now();
+      await request().get('/getNewTaskOnTaskCompletion').set('Authorization', `Bearer ${token}`);
+
+      const row = await pollUntil(async () => {
+        const r = await knex('taskusers').where({ user_id: user.id, task_id: 130 }).first();
+        return r || null;
+      });
+      expect(secondsUntil(row.completed_at, before)).toBeGreaterThan(290);
+      expect(secondsUntil(row.completed_at, before)).toBeLessThan(310);
+    });
+
+    test('queued normal task is popped, then a drained queue falls back to the random generator', async () => {
+      const { user, token } = await authedUser();
+      await createScores(user.id, { level: 1 });
+      await setFutureTasks(user.id, [{ task_id: 42, is_bomb: false }]);
+
+      await request().get('/getNewTaskOnTaskCompletion').set('Authorization', `Bearer ${token}`);
+
+      const queued = await pollUntil(async () => {
+        const r = await knex('taskusers').where({ user_id: user.id, task_id: 42 }).first();
+        return r || null;
+      });
+      expect(queued.is_bomb).toBe(0);
+      expect(queued.bomb_status).toBe(-1);
+      expect((await knex('futuretasks').where({ user_id: user.id }).first()).tasks).toEqual([]);
+
+      // Same constant-roll trick as the normal-task branch test above: task 6, not a bomb.
+      randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
+      await request().get('/getNewTaskOnTaskCompletion').set('Authorization', `Bearer ${token}`);
+
+      await pollUntil(async () => {
+        const r = await knex('taskusers').where({ user_id: user.id, task_id: 6, is_bomb: 0 }).first();
+        return r || null;
+      });
+    });
+
+    test('concurrent calls never pop the same queued entry twice', async () => {
+      const { user, token } = await authedUser();
+      await createScores(user.id, { level: 1 });
+      await setFutureTasks(user.id, [
+        { task_id: 141, is_bomb: true },
+        { task_id: 142, is_bomb: true },
+        { task_id: 143, is_bomb: true }
+      ]);
+      randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.5); // overflow calls -> task 6
+
+      await Promise.all([1, 2, 3, 4, 5].map(() =>
+        request().get('/getNewTaskOnTaskCompletion').set('Authorization', `Bearer ${token}`)));
+
+      const rows = await pollUntil(async () => {
+        const r = await knex('taskusers').where({ user_id: user.id });
+        return r.length === 5 ? r : null;
+      });
+      const queuedIds = rows.map(r => r.task_id).filter(id => id > 140).sort();
+      expect(queuedIds).toEqual([141, 142, 143]);
+      expect((await knex('futuretasks').where({ user_id: user.id }).first()).tasks).toEqual([]);
     });
 
     test('short-circuits with no new task when 5 undone tasks already exist', async () => {
