@@ -3,7 +3,7 @@
 const knex = require('../../db/knex');
 
 // Mutable, per-user tables touched by the in-scope controllers (registration, game,
-// factory, tasksgame, admin). Static lookups seeded once in globalSetup (jeweltype, tasks,
+// factory, tasksgame, admin, admin gifts). Static lookups seeded once in globalSetup (jeweltype, tasks,
 // taskdetails, achievements, factory, factorymaterial) are deliberately left alone.
 const MUTABLE_TABLES = [
   'jcusers',
@@ -18,6 +18,9 @@ const MUTABLE_TABLES = [
   'coinlog',
   'pointlog',
   'futuretasks',
+  'gifttasks',
+  'gifttaskdetails',
+  'gifttaskusers',
   'admins',
   'adminlogs'
 ];

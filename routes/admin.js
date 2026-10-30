@@ -48,6 +48,12 @@ router.post('/users/:id/futuretasks', adminAuth, controller.admin.appendFutureTa
 router.put('/users/:id/futuretasks', adminAuth, controller.admin.replaceFutureTasks);
 
 router.get('/tasks', adminAuth, controller.admin.getTaskCatalog);
+router.get('/jeweltypes', adminAuth, controller.admingifts.getJewelTypes);
+
+router.get('/gifts', adminAuth, controller.admingifts.getGifts);
+router.post('/gifts', adminAuth, controller.admingifts.createGift);
+router.put('/gifts/:id', adminAuth, controller.admingifts.updateGift);
+router.put('/gifts/:id/enabled', adminAuth, controller.admingifts.setGiftEnabled);
 
 
 
