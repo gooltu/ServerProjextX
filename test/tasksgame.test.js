@@ -13,7 +13,7 @@ const {
 const { mintAccessToken } = require('./helpers/auth');
 const { pollUntil } = require('./helpers/poll');
 
-const level_max = [55, 289, 346, 313, 241, 220, 290, 410, 491, 481, 611, 567, 612, 726, 827, 843, 783, 723, 741, 842, 956, 999, 955, 885, 877, 959, 1079, 1147, 1124, 1053, 1053, 1124, 1147, 1079, 959, 877, 885, 955, 999, 956, 842, 741, 723, 783, 843, 827, 726, 612, 567, 611];
+const { LEVEL_MAX: level_max } = require('../utils/levelConstants');
 
 // Task catalog (from the real db/seeds/tasks.sql + taskdetails.sql dump):
 // task 1: coins=2, points=12, requires jeweltype 9 x10
