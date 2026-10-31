@@ -15,6 +15,7 @@ const MAX_QTY = 100000;
 const MAX_PLUS_LEVEL = 1000;
 const MAX_PRIORITY = 100000;
 const MAX_JEWEL_COUNT = 100000;
+const MAX_PRODUCT_VALUE = 10000000;
 
 // jeweltype 2 ("referred user") is a referral marker, not a jewel players collect, so it
 // can't be a gift requirement. Diamonds (0) and coins (1) live in the jewels table like the
@@ -26,7 +27,7 @@ const GIFT_IMAGE_TYPES = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp'
 
 // Columns returned to the admin app and written by create/update.
 const GIFT_COLUMNS = ['id', 'priority', 'enabled', 'cash', 'productname', 'productdetail', 'product_pic',
-  'productlinks', 'money', 'total_qty', 'current_qty', 'plus_level', 'created_at'];
+  'productlinks', 'money', 'product_value', 'total_qty', 'current_qty', 'plus_level', 'created_at'];
 
 
 function badRequest(res, message) {
@@ -79,6 +80,14 @@ function normalizeGift(body) {
   let links = optionalText(body.productlinks, 1000, 'productlinks');
   if (links.message) return links;
 
+  // Optional rupee amount, up to 2 decimals (decimal(10,2) column).
+  let productValue = body.product_value;
+  if (productValue === undefined || productValue === '')
+    productValue = null;
+  if (productValue !== null && (typeof productValue !== 'number' || !Number.isFinite(productValue) || productValue < 0 ||
+    productValue > MAX_PRODUCT_VALUE || Math.abs(Math.round(productValue * 100) - productValue * 100) > 1e-6))
+    return { message: `product_value must be a number from 0 to ${MAX_PRODUCT_VALUE} with at most 2 decimals` };
+
   if (!isIntIn(body.priority, 0, MAX_PRIORITY))
     return { message: `priority must be an integer from 0 to ${MAX_PRIORITY}` };
   if (!isIntIn(body.plus_level, 0, MAX_PLUS_LEVEL))
@@ -112,6 +121,7 @@ function normalizeGift(body) {
     product_pic: pic,
     productdetail: detail.value,
     productlinks: links.value,
+    product_value: productValue,
     priority: body.priority,
     plus_level: body.plus_level,
     total_qty: body.total_qty,
@@ -133,6 +143,7 @@ function toApi(row, jewels) {
     enabled: !!row.enabled,
     cash: !!row.cash,
     money: Number(row.money || 0),
+    product_value: row.product_value === null ? null : Number(row.product_value),
     jewels: jewels || []
   };
 }

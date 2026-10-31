@@ -19,6 +19,7 @@ function giftBody(overrides = {}) {
     productdetail: 'Over-ear, 30h battery',
     product_pic: 'https://cdn.example.com/headphones.png',
     productlinks: 'https://shop.example.com/headphones',
+    product_value: 2999.5,
     priority: 1,
     plus_level: 5,
     total_qty: 10,
@@ -61,7 +62,7 @@ describe('admingifts.js', () => {
     const res = await request().post('/admin/gifts').set('Authorization', `Bearer ${token}`).send(giftBody());
     expect(res.status).toBe(200);
     expect(res.body.gift).toMatchObject({
-      productname: 'Wireless Headphones', cash: false, money: 0, enabled: true, total_qty: 10, current_qty: 10, won: 0,
+      productname: 'Wireless Headphones', cash: false, money: 0, product_value: 2999.5, enabled: true, total_qty: 10, current_qty: 10, won: 0,
       jewels: [{ jeweltype_id: 3, name: 'j3', count: 20 }, { jeweltype_id: 0, name: 'diamond', count: 50 }]
     });
 
@@ -93,13 +94,25 @@ describe('admingifts.js', () => {
       { jewels: [{ jeweltype_id: 3, count: 0 }] },
       { jewels: [{ jeweltype_id: 3, count: 1 }, { jeweltype_id: 3, count: 2 }] },
       { jewels: [{ jeweltype_id: 999, count: 1 }] },
-      { jewels: [{ jeweltype_id: 2, count: 1 }] }
+      { jewels: [{ jeweltype_id: 2, count: 1 }] },
+      { product_value: -1 },
+      { product_value: 1.234 },
+      { product_value: '2999' }
     ];
     for (const overrides of bad) {
       const res = await request().post('/admin/gifts').set('Authorization', `Bearer ${token}`).send(giftBody(overrides));
       expect(res.status).toBe(400);
     }
     expect(await knex('gifttasks')).toHaveLength(0);
+  });
+
+  test('product_value is optional and never paid out', async () => {
+    const token = await adminToken();
+    const res = await request().post('/admin/gifts').set('Authorization', `Bearer ${token}`)
+      .send(giftBody({ product_value: null }));
+    expect(res.status).toBe(200);
+    expect(res.body.gift.product_value).toBeNull();
+    expect(res.body.gift.money).toBe(0);
   });
 
   test('lists every gift, disabled ones included, with won counts', async () => {
