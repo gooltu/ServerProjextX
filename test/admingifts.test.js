@@ -4,6 +4,7 @@ const request = require('./helpers/app');
 const { knex } = require('./helpers/db');
 const { createAdmin, createTestUser } = require('./helpers/fixtures');
 const { mintAccessToken, mintAdminToken } = require('./helpers/auth');
+const { __mocks: s3Mocks } = require('aws-sdk');
 
 // jeweltype is seeded statically (globalSetup): 0 diamond, 1 coin, 3..17 j1..j15.
 
@@ -177,5 +178,62 @@ describe('admingifts.js', () => {
     const game = await request().post('/getGiftTasks').set('Authorization', `Bearer ${mintAccessToken(player.id)}`)
       .send({ page: 0 });
     expect(game.body.gifttasks).toEqual([]);
+  });
+
+  test('uploads a gift image to the uploads bucket and returns a URL a gift can use', async () => {
+    const token = await adminToken();
+    s3Mocks.putObject.mockClear();
+
+    const res = await request().post('/admin/gifts/image').set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'image/png').send(Buffer.from('fake png bytes'));
+    expect(res.status).toBe(200);
+    const match = res.body.url.match(/^http:\/\/127\.0\.0\.1:\d+\/giftimage\/([0-9a-f-]{36}\.png)$/);
+    expect(match).not.toBeNull();
+    expect(s3Mocks.putObject).toHaveBeenCalledWith(expect.objectContaining({
+      Bucket: 'jewelchat-uploads-prod', Key: `uploads/gifts/${match[1]}`, ContentType: 'image/png'
+    }));
+    expect(await knex('adminlogs').where({ action: 'gift_image_upload' })).toHaveLength(1);
+
+    // Accepted as product_pic even though the local test server is plain http.
+    const created = await request().post('/admin/gifts').set('Authorization', `Bearer ${token}`)
+      .send(giftBody({ product_pic: res.body.url }));
+    expect(created.status).toBe(200);
+    expect(created.body.gift.product_pic).toBe(res.body.url);
+  });
+
+  test('gift image upload rejects other types and empty bodies, and needs an admin', async () => {
+    const token = await adminToken();
+    s3Mocks.putObject.mockClear();
+
+    const svg = await request().post('/admin/gifts/image').set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'image/svg+xml').send(Buffer.from('<svg/>'));
+    expect(svg.status).toBe(400);
+    const empty = await request().post('/admin/gifts/image').set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'image/png').send(Buffer.alloc(0));
+    expect(empty.status).toBe(400);
+    const anon = await request().post('/admin/gifts/image').set('Content-Type', 'image/png').send(Buffer.from('x'));
+    expect(anon.status).toBe(401);
+    expect(s3Mocks.putObject).not.toHaveBeenCalled();
+  });
+
+  test('http product_pic is only allowed for uploaded gift image URLs', async () => {
+    const token = await adminToken();
+    const res = await request().post('/admin/gifts').set('Authorization', `Bearer ${token}`)
+      .send(giftBody({ product_pic: 'http://localhost:3000/giftimage/../etc.png' }));
+    expect(res.status).toBe(400);
+  });
+
+  test('gift image URLs redirect to a presigned S3 URL without auth', async () => {
+    s3Mocks.getSignedUrlPromise.mockClear();
+    const name = '0b0c6d2e-3f4a-4b5c-8d6e-7f8091a2b3c4.png';
+
+    const res = await request().get(`/giftimage/${name}`);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('https://mock-s3-url.test/signed');
+    expect(s3Mocks.getSignedUrlPromise).toHaveBeenCalledWith('getObject',
+      expect.objectContaining({ Bucket: 'jewelchat-uploads-prod', Key: `uploads/gifts/${name}` }));
+
+    const bad = await request().get('/giftimage/profile.png');
+    expect(bad.status).toBe(404);
   });
 });

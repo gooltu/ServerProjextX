@@ -70,6 +70,8 @@ router.post('/getUploadUrl', passport.authenticate('jwt'), controller.uploads.ge
 router.post('/getDownloadUrl', passport.authenticate('jwt'), controller.uploads.getDownloadUrl);
 router.post('/getProfilePicUploadUrl', passport.authenticate('jwt'), controller.uploads.getProfilePicUploadUrl);
 router.post('/getProfilePicDownloadUrl', passport.authenticate('jwt'), controller.uploads.getProfilePicDownloadUrl);
+// Unauthenticated - gifttasks.product_pic points here (see uploads.getGiftImage).
+router.get('/giftimage/:name', controller.uploads.getGiftImage);
 
 
 router.post('/getAchievements', passport.authenticate('jwt'), controller.achievements.getAchievements);

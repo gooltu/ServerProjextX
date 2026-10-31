@@ -1,6 +1,8 @@
 'use strict'
 
+let crypto = require('crypto');
 let knex = require('../db/knex');
+let { s3, BUCKET, GIFT_IMAGE_PREFIX, GIFT_IMAGE_NAME_RE } = require('../utils/s3');
 
 // Admin setup of the gift catalog the game section shows (tasksgift.getGiftTasks lists enabled
 // gifttasks by priority; redeemGiftTask spends the gifttaskdetails jewels). Product gifts only:
@@ -13,6 +15,9 @@ const MAX_QTY = 100000;
 const MAX_PLUS_LEVEL = 1000;
 const MAX_PRIORITY = 100000;
 const MAX_JEWEL_COUNT = 100000;
+
+// Uploadable gift image types -> file extension (routes/admin.js caps the size).
+const GIFT_IMAGE_TYPES = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' };
 
 // Columns returned to the admin app and written by create/update.
 const GIFT_COLUMNS = ['id', 'priority', 'enabled', 'cash', 'productname', 'productdetail', 'product_pic',
@@ -30,6 +35,15 @@ function parseGiftId(req) {
 
 function isIntIn(v, min, max) {
   return Number.isInteger(v) && v >= min && v <= max;
+}
+
+// An https image URL, or a /giftimage/ URL from uploadGiftImage (http only
+// when the API itself runs on plain http, i.e. locally).
+function isValidPicUrl(url) {
+  if (url.protocol === 'https:')
+    return true;
+  let parts = url.pathname.split('/');
+  return url.protocol === 'http:' && parts.length === 3 && parts[1] === 'giftimage' && GIFT_IMAGE_NAME_RE.test(parts[2]);
 }
 
 function optionalText(v, max, field) {
@@ -52,7 +66,7 @@ function normalizeGift(body) {
   let pic = typeof body.product_pic === 'string' ? body.product_pic.trim() : '';
   let url = null;
   try { url = new URL(pic); } catch (e) { /* invalid */ }
-  if (!url || url.protocol !== 'https:' || pic.length > 255)
+  if (!url || !isValidPicUrl(url) || pic.length > 255)
     return { message: 'product_pic must be an https URL (at most 255 characters)' };
 
   let detail = optionalText(body.productdetail, 1500, 'productdetail');
@@ -175,6 +189,32 @@ admingifts.getJewelTypes = async function (req, res, next) {
 admingifts.getGifts = async function (req, res, next) {
   try {
     return res.json({ error: false, gifts: await loadGifts(knex) });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Body is the raw image (express.raw in routes/admin.js). Stores it in the
+// uploads bucket and returns the stable URL to save as product_pic, served by
+// uploads.getGiftImage. Images uploaded but never saved on a gift stay in S3.
+admingifts.uploadGiftImage = async function (req, res, next) {
+  try {
+    let ext = GIFT_IMAGE_TYPES[req.get('Content-Type')];
+    if (!ext)
+      return badRequest(res, 'Image must be PNG, JPEG, WebP or GIF');
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0)
+      return badRequest(res, 'Image is empty');
+
+    let name = `${crypto.randomUUID()}.${ext}`;
+    await s3.putObject({
+      Bucket: BUCKET,
+      Key: GIFT_IMAGE_PREFIX + name,
+      Body: req.body,
+      ContentType: req.get('Content-Type')
+    }).promise();
+
+    await knex('adminlogs').insert({ admin_id: req.user.id, action: 'gift_image_upload', payload: JSON.stringify({ name, bytes: req.body.length }) });
+    return res.json({ error: false, url: `${req.protocol}://${req.get('host')}/giftimage/${name}` });
   } catch (err) {
     next(err);
   }

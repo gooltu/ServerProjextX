@@ -1,20 +1,8 @@
 'use strict'
 
 let crypto = require('crypto');
-let AWS = require('aws-sdk');
+let { s3, BUCKET, GIFT_IMAGE_PREFIX, GIFT_IMAGE_NAME_RE } = require('../utils/s3');
 
-// Explicit, self-contained client — deliberately NOT the global AWS.config,
-// which controllers/registration.js mutates for Cognito (different
-// credentials, different region). Keeping this client's config local avoids
-// cross-contamination in either direction.
-let s3 = new AWS.S3({
-	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-	region: process.env.AWS_REGION,
-	signatureVersion: 'v4' // ap-south-2 only supports SigV4
-});
-
-const BUCKET = 'jewelchat-uploads-prod';
 const EXPIRES_SECONDS = 300;
 const CONTENT_TYPE_RE = /^(image|video|audio)\/[\w.+-]+$/;
 const IMAGE_CONTENT_TYPE_RE = /^image\/[\w.+-]+$/;
@@ -22,6 +10,8 @@ const IMAGE_CONTENT_TYPE_RE = /^image\/[\w.+-]+$/;
 function profilePicKey(userId) {
 	return `uploads/${userId}/profile`;
 }
+
+const GIFT_IMAGE_EXPIRES_SECONDS = 3600;
 
 let uploads = module.exports;
 
@@ -118,6 +108,29 @@ uploads.getProfilePicDownloadUrl = function (req, res, next) {
 
 	s3.getSignedUrlPromise('getObject', { Bucket: BUCKET, Key: key, Expires: EXPIRES_SECONDS })
 		.then(downloadUrl => res.json({ error: false, downloadUrl }))
+		.catch(err => next(err));
+
+};
+
+// Public, unauthenticated: gifttasks.product_pic stores this endpoint's
+// stable URL (copied into allgifts on redemption and shown by the game app
+// as a plain image URL), and an <Image> can't send an Authorization header.
+// The bucket stays private - this just redirects to a short-lived presigned
+// GET. Gift images aren't secret, and the UUID name can't be enumerated.
+uploads.getGiftImage = function (req, res, next) {
+
+	let name = req.params.name;
+
+	if (!GIFT_IMAGE_NAME_RE.test(name)) {
+		return res.sendStatus(404);
+	}
+
+	s3.getSignedUrlPromise('getObject', { Bucket: BUCKET, Key: GIFT_IMAGE_PREFIX + name, Expires: GIFT_IMAGE_EXPIRES_SECONDS })
+		.then(url => {
+			// Cache the redirect for less time than the signed URL lives.
+			res.set('Cache-Control', 'public, max-age=1800');
+			res.redirect(302, url);
+		})
 		.catch(err => next(err));
 
 };

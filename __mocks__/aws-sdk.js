@@ -6,12 +6,13 @@
 // controllers/uploads.js's S3 presigned URLs for a later test pass.
 
 const getSignedUrlPromise = jest.fn().mockResolvedValue('https://mock-s3-url.test/signed');
+const putObject = jest.fn(() => ({ promise: () => Promise.resolve({}) }));
 const getOpenIdTokenForDeveloperIdentity = jest.fn((params, cb) => {
   cb(null, { IdentityId: 'mock-identity-id', Token: 'mock-token' });
 });
 
 function S3() {
-  return { getSignedUrlPromise };
+  return { getSignedUrlPromise, putObject };
 }
 
 function CognitoIdentity() {
@@ -25,5 +26,5 @@ module.exports = {
   },
   S3,
   CognitoIdentity,
-  __mocks: { getSignedUrlPromise, getOpenIdTokenForDeveloperIdentity }
+  __mocks: { getSignedUrlPromise, putObject, getOpenIdTokenForDeveloperIdentity }
 };

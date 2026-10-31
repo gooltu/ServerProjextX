@@ -51,6 +51,7 @@ router.get('/tasks', adminAuth, controller.admin.getTaskCatalog);
 router.get('/jeweltypes', adminAuth, controller.admingifts.getJewelTypes);
 
 router.get('/gifts', adminAuth, controller.admingifts.getGifts);
+router.post('/gifts/image', adminAuth, express.raw({ type: 'image/*', limit: '5mb' }), controller.admingifts.uploadGiftImage);
 router.post('/gifts', adminAuth, controller.admingifts.createGift);
 router.put('/gifts/:id', adminAuth, controller.admingifts.updateGift);
 router.put('/gifts/:id/enabled', adminAuth, controller.admingifts.setGiftEnabled);
