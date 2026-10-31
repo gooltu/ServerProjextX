@@ -37,105 +37,105 @@ exports.seed = function(knex) {
   .then(()=>{
       return knex('jeweltype').insert({
         id: 3,
-        name: 'j1',
-        min_cost: 5000
-      });
-  })
-  .then(()=>{
-      return knex('jeweltype').insert({
-        id: 4,
-        name: 'j2',
-        min_cost: 5000
-      });
-  })
-  .then(()=>{
-      return knex('jeweltype').insert({
-        id: 5,
         name: 'j3',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 6,
+        id: 4,
         name: 'j4',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 7,
+        id: 5,
         name: 'j5',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 8,
+        id: 6,
         name: 'j6',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 9,
+        id: 7,
         name: 'j7',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 10,
+        id: 8,
         name: 'j8',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 11,
+        id: 9,
         name: 'j9',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 12,
+        id: 10,
         name: 'j10',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 13,
+        id: 11,
         name: 'j11',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 14,
+        id: 12,
         name: 'j12',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 15,
+        id: 13,
         name: 'j13',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 16,
+        id: 14,
         name: 'j14',
         min_cost: 5000
       });
   })
   .then(()=>{
       return knex('jeweltype').insert({
-        id: 17,
+        id: 15,
         name: 'j15',
+        min_cost: 5000
+      });
+  })
+  .then(()=>{
+      return knex('jeweltype').insert({
+        id: 16,
+        name: 'j16',
+        min_cost: 5000
+      });
+  })
+  .then(()=>{
+      return knex('jeweltype').insert({
+        id: 17,
+        name: 'j17',
         min_cost: 5000
       });
   })

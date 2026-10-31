@@ -16,6 +16,11 @@ const MAX_PLUS_LEVEL = 1000;
 const MAX_PRIORITY = 100000;
 const MAX_JEWEL_COUNT = 100000;
 
+// jeweltype 2 ("referred user") is a referral marker, not a jewel players collect, so it
+// can't be a gift requirement. Diamonds (0) and coins (1) live in the jewels table like the
+// collectible j3..j17, so redeemGiftTask can spend them.
+const NON_GIFT_JEWELTYPES = [2];
+
 // Uploadable gift image types -> file extension (routes/admin.js caps the size).
 const GIFT_IMAGE_TYPES = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' };
 
@@ -118,7 +123,7 @@ function normalizeGift(body) {
 
 async function findMissingJeweltypes(jewels) {
   let ids = jewels.map(j => j.jeweltype_id);
-  let found = await knex('jeweltype').whereIn('id', ids).pluck('id');
+  let found = await knex('jeweltype').whereIn('id', ids).whereNotIn('id', NON_GIFT_JEWELTYPES).pluck('id');
   return ids.filter(id => !found.includes(id));
 }
 
@@ -179,7 +184,7 @@ function sendRejected(res, err) {
 
 admingifts.getJewelTypes = async function (req, res, next) {
   try {
-    let jeweltypes = await knex('jeweltype').orderBy('id').select('id', 'name');
+    let jeweltypes = await knex('jeweltype').whereNotIn('id', NON_GIFT_JEWELTYPES).orderBy('id').select('id', 'name');
     return res.json({ error: false, jeweltypes });
   } catch (err) {
     next(err);
@@ -228,7 +233,7 @@ admingifts.createGift = async function (req, res, next) {
 
     let missing = await findMissingJeweltypes(jewels);
     if (missing.length > 0)
-      return badRequest(res, `Unknown jeweltype_id: ${missing.join(', ')}`);
+      return badRequest(res, `Unknown or non-gift jeweltype_id: ${missing.join(', ')}`);
 
     let created = await knex.transaction(async trx => {
       let [id] = await trx('gifttasks').insert({ ...gift, cash: false, money: 0 });
@@ -261,7 +266,7 @@ admingifts.updateGift = async function (req, res, next) {
 
     let missing = await findMissingJeweltypes(jewels);
     if (missing.length > 0)
-      return badRequest(res, `Unknown jeweltype_id: ${missing.join(', ')}`);
+      return badRequest(res, `Unknown or non-gift jeweltype_id: ${missing.join(', ')}`);
 
     try {
       let updated = await knex.transaction(async trx => {

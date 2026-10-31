@@ -6,7 +6,7 @@ const { createAdmin, createTestUser } = require('./helpers/fixtures');
 const { mintAccessToken, mintAdminToken } = require('./helpers/auth');
 const { __mocks: s3Mocks } = require('aws-sdk');
 
-// jeweltype is seeded statically (globalSetup): 0 diamond, 1 coin, 3..17 j1..j15.
+// jeweltype is seeded statically (globalSetup): 0 diamond, 1 coin, 3..17 j3..j17 (named after their id).
 
 async function adminToken() {
   const admin = await createAdmin();
@@ -52,6 +52,7 @@ describe('admingifts.js', () => {
     const res = await request().get('/admin/jeweltypes').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.jeweltypes[0]).toEqual({ id: 0, name: 'diamond' });
+    expect(res.body.jeweltypes.map(t => t.id)).not.toContain(2); // "referred user" isn't a collectible
   });
 
   test('creates a product gift that the game section then lists', async () => {
@@ -61,7 +62,7 @@ describe('admingifts.js', () => {
     expect(res.status).toBe(200);
     expect(res.body.gift).toMatchObject({
       productname: 'Wireless Headphones', cash: false, money: 0, enabled: true, total_qty: 10, current_qty: 10, won: 0,
-      jewels: [{ jeweltype_id: 3, name: 'j1', count: 20 }, { jeweltype_id: 0, name: 'diamond', count: 50 }]
+      jewels: [{ jeweltype_id: 3, name: 'j3', count: 20 }, { jeweltype_id: 0, name: 'diamond', count: 50 }]
     });
 
     const log = await knex('adminlogs').where({ action: 'gift_create' }).first();
@@ -91,7 +92,8 @@ describe('admingifts.js', () => {
       { jewels: [] },
       { jewels: [{ jeweltype_id: 3, count: 0 }] },
       { jewels: [{ jeweltype_id: 3, count: 1 }, { jeweltype_id: 3, count: 2 }] },
-      { jewels: [{ jeweltype_id: 999, count: 1 }] }
+      { jewels: [{ jeweltype_id: 999, count: 1 }] },
+      { jewels: [{ jeweltype_id: 2, count: 1 }] }
     ];
     for (const overrides of bad) {
       const res = await request().post('/admin/gifts').set('Authorization', `Bearer ${token}`).send(giftBody(overrides));
@@ -110,7 +112,7 @@ describe('admingifts.js', () => {
     const res = await request().get('/admin/gifts').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.gifts.map(g => [g.id, g.enabled, g.won])).toEqual([[b, false, 0], [a, true, 1]]);
-    expect(res.body.gifts[0].jewels).toEqual([{ jeweltype_id: 4, name: 'j2', count: 7 }]);
+    expect(res.body.gifts[0].jewels).toEqual([{ jeweltype_id: 4, name: 'j4', count: 7 }]);
   });
 
   test('updates fields and replaces jewel requirements', async () => {
