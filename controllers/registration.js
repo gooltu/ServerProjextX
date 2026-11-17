@@ -66,7 +66,8 @@ registration.registerPhoneNumber = function (req, res, next) {
 
 
 
-				let se = speakeasy.totp({ secret: 'secret', encoding: 'base32' });
+				//let se = speakeasy.totp({ secret: 'secret', encoding: 'base32' });
+				let se = '888888';
 
 				if (phone === '919903307534')
 					se = '888888';
@@ -111,8 +112,8 @@ registration.registerPhoneNumber = function (req, res, next) {
 			} else {
 
 
-				let se = speakeasy.totp({ secret: 'secret', encoding: 'base32' });
-				//let se = '888888';
+				//let se = speakeasy.totp({ secret: 'secret', encoding: 'base32' });
+				let se = '888888';
 
 				if (phone === '919903307534')
 					se = '888888';
